@@ -1,29 +1,33 @@
 # Bank Balance Tracker
 
-A small browser-based bank account balance tracker built with plain HTML, Firebase Authentication, Cloud Firestore, and Chart.js.
+A browser-based personal bank account balance tracker branded as FinFlow. It uses plain HTML, Tailwind CSS, Firebase Authentication, Cloud Firestore, and Chart.js.
 
 ## Features
 
-- Create an account and sign in with email and password.
+- Sign in or create an account with email and password.
+- Sign in with Google OAuth.
+- Try an interactive demo without logging in; demo changes are kept in memory only.
 - Save one balance entry per date, with an optional note.
 - Edit or delete existing entries.
-- View entries in a newest-first history table.
-- View balance changes over time in a line chart.
-- Keep each user's balances isolated under their Firebase user ID.
+- View dashboard metrics for the latest, highest, and lowest balances, percentage change, and record count.
+- View entries in a searchable history table with a confirmation dialog for deletion.
+- View balance changes over time in a responsive line chart.
+- Switch between light and dark themes.
+- Keep each authenticated user's balances isolated under their Firebase user ID.
 
 ## Requirements
 
 - A Firebase project.
-- Email/password sign-in enabled in **Authentication > Sign-in method**.
+- Email/password and Google sign-in enabled in **Authentication > Sign-in method**.
 - Cloud Firestore created in the Firebase console.
 - A local web server. The page uses JavaScript modules and should not be opened directly with `file://`.
 
 ## Firebase setup
 
 1. In the Firebase console, create or select a project.
-2. Register a web app and copy its Firebase configuration object.
-3. Open `index.html` and replace the placeholder values in `firebaseConfig` with the values from Firebase.
-4. Enable the Email/Password provider under Firebase Authentication.
+2. Register a web app and copy its Firebase configuration object into `index.html` if using a different Firebase project.
+3. Enable the Email/Password and Google providers under Firebase Authentication.
+4. Add the local development URL, such as `http://localhost:8000`, to Firebase Authentication's authorized domains if required.
 5. Create a Firestore database.
 6. Add Firestore security rules that only allow an authenticated user to access their own balances. For example:
 
@@ -39,7 +43,7 @@ A small browser-based bank account balance tracker built with plain HTML, Fireba
 	 }
 	 ```
 
-Do not commit production credentials or permissive Firestore rules to a public repository. Firebase web configuration values identify the project, but authorization is enforced by Authentication and Firestore rules.
+The current page is configured for the `bank-tracker-8bf36` Firebase project. Do not use permissive Firestore rules in production. Firebase web configuration values identify the project, but authorization is enforced by Authentication and Firestore rules.
 
 ## Run locally
 
@@ -70,10 +74,12 @@ updatedAt: timestamp
 
 The date is used as the document ID, so saving another balance for the same date updates that day's entry.
 
+The demo mode uses sample entries in browser memory and does not read from or write to Firestore.
+
 ## Implementation notes
 
-- Firebase SDK modules are loaded from Google CDN version `10.14.0`.
-- Chart.js is loaded from jsDelivr.
-- The history query orders records by `createdAt` descending; the chart separately sorts document IDs chronologically.
-- The current page displays Firebase error messages directly in the UI. For production use, consider mapping technical errors to user-friendly messages and validating balance ranges or currency explicitly.
-- The history table currently builds action buttons with `innerHTML`; notes should be treated as untrusted input. A production hardening pass should create cells with `textContent` and attach event listeners instead of interpolating note text into inline handlers.
+- Tailwind CSS, Inter, and Chart.js are loaded from CDNs; Firebase SDK modules are loaded from Google CDN version `10.14.0`.
+- The history query orders records by `createdAt` descending; metrics and the chart sort entries by their date document ID.
+- The chart uses USD formatting and the form accepts decimal balance values.
+- Notes are HTML-escaped before being displayed, but edit/delete controls still use inline event handlers. A future hardening pass could attach listeners programmatically and avoid interpolating values into handler attributes.
+- Firebase error messages are displayed directly in the authentication and data error UI. For production use, consider mapping technical errors to user-friendly messages and validating balance ranges explicitly.
