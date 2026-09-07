@@ -1,72 +1,401 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bank Balance Tracker</title>
+  <title>FinFlow - Modern Bank Balance Tracker</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0f7ff',
+              100: '#e0effe',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              800: '#1e40af',
+              900: '#1e3a8a',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Font - Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
   <style>
-    body { font-family: system-ui, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; background: #f8f9fa; }
-    h1 { margin-bottom: 10px; }
-    input, button, select { padding: 10px 14px; margin: 5px 0; font-size: 15px; border-radius: 6px; border: 1px solid #ccc; }
-    button { cursor: pointer; background: #2563eb; color: white; border: none; }
-    button:hover { background: #1d4ed8; }
-    button.secondary { background: #6b7280; }
-    button.danger { background: #dc2626; }
-    button.danger:hover { background: #b91c1c; }
-    .hidden { display: none; }
-    .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 24px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
-    th, td { border: 1px solid #e5e7eb; padding: 10px 12px; text-align: left; }
-    th { background: #f3f4f6; font-weight: 600; }
-    tr:nth-child(even) { background: #f9fafb; }
-    .actions button { padding: 5px 10px; font-size: 13px; margin-right: 6px; }
-    #chartContainer { position: relative; height: 320px; margin-top: 10px; }
-    #saveMessage, #authMessage { margin-top: 8px; font-size: 14px; }
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    
+    .glass-card {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(229, 231, 235, 0.8);
+    }
+    
+    .dark .glass-card {
+      background: rgba(17, 24, 39, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(55, 65, 81, 0.6);
+    }
+
+    /* Custom scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(156, 163, 175, 0.4);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(156, 163, 175, 0.7);
+    }
   </style>
 </head>
-<body>
-  <h1>Bank Balance Tracker</h1>
 
-  <!-- Login Section -->
-  <div id="loginSection" class="card">
-    <h3>Login / Sign Up</h3>
-    <input type="email" id="email" placeholder="Email" style="width:100%; max-width:300px;"><br>
-    <input type="password" id="password" placeholder="Password" style="width:100%; max-width:300px;"><br>
-    <button onclick="login()">Login</button>
-    <button class="secondary" onclick="signup()">Sign Up</button>
-    <button class="secondary" onclick="loginWithGoogle()" style="background: #db4437;">Sign in with Google</button>
-    <p id="authMessage" style="color:#dc2626;"></p>
+<body class="h-full bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors duration-200 antialiased flex flex-col min-h-screen">
+
+  <!-- Top Navigation Header -->
+  <header class="sticky top-0 z-30 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <!-- Logo & Title -->
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-brand-500/20">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+            FinFlow
+            <span id="demoBadge" class="hidden text-xs px-2 py-0.5 rounded-full font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 border border-amber-300 dark:border-amber-700">Demo Mode</span>
+          </h1>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Personal Balance Tracker</p>
+        </div>
+      </div>
+
+      <!-- Right Header Actions -->
+      <div class="flex items-center space-x-3">
+        <!-- Theme Toggle -->
+        <button id="themeToggleBtn" onclick="toggleDarkMode()" class="p-2.5 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all focus:outline-none focus:ring-2 focus:ring-brand-500" title="Toggle Theme">
+          <svg id="sunIcon" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+          <svg id="moonIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+        </button>
+
+        <!-- User Info / Logout Button (App section only) -->
+        <div id="userHeaderProfile" class="hidden flex items-center space-x-3 border-l border-slate-200 dark:border-slate-800 pl-3">
+          <div class="hidden sm:block text-right">
+            <p id="userEmail" class="text-xs font-semibold text-slate-700 dark:text-slate-200 max-w-[150px] truncate"></p>
+            <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">● Connected</span>
+          </div>
+          <button onclick="logout()" class="px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors border border-slate-200 dark:border-slate-700">
+            Sign Out
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+    <!-- Toast Notification Banner -->
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none max-w-md w-full px-4"></div>
+
+    <!-- LOGIN & AUTHENTICATION SECTION -->
+    <div id="loginSection" class="max-w-md mx-auto my-12 transition-all">
+      <div class="glass-card rounded-2xl p-8 shadow-xl border border-slate-200/80 dark:border-slate-800 relative overflow-hidden">
+        
+        <!-- Decorative Header Gradient -->
+        <div class="absolute -top-12 -left-12 w-32 h-32 bg-brand-500/20 rounded-full blur-2xl pointer-events-none"></div>
+        <div class="absolute -bottom-12 -right-12 w-32 h-32 bg-indigo-500/20 rounded-full blur-2xl pointer-events-none"></div>
+
+        <div class="text-center mb-8 relative z-10">
+          <div class="inline-flex p-3 rounded-2xl bg-brand-50 dark:bg-brand-950/50 text-brand-600 dark:text-brand-400 mb-3 border border-brand-100 dark:border-brand-900">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+          </div>
+          <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Welcome to FinFlow</h2>
+          <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Sign in to track and analyze your bank balances over time</p>
+        </div>
+
+        <form onsubmit="event.preventDefault();" class="space-y-4 relative z-10">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Email Address</label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"/></svg>
+              </span>
+              <input type="email" id="email" placeholder="name@example.com" class="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-slate-900 dark:text-white outline-none transition-all">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Password</label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+              </span>
+              <input type="password" id="password" placeholder="••••••••" class="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-slate-900 dark:text-white outline-none transition-all">
+            </div>
+          </div>
+
+          <!-- Auth Actions Button Grid -->
+          <div class="pt-2 flex flex-col gap-2.5">
+            <button type="button" onclick="login()" class="w-full py-2.5 px-4 bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold rounded-xl shadow-md shadow-brand-500/20 active:scale-[0.99] transition-all flex items-center justify-center gap-2">
+              Sign In
+            </button>
+
+            <button type="button" onclick="signup()" class="w-full py-2.5 px-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-sm font-semibold rounded-xl transition-all border border-slate-200 dark:border-slate-700">
+              Create New Account
+            </button>
+
+            <div class="relative my-2">
+              <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-slate-200 dark:border-slate-800"></div></div>
+              <div class="relative flex justify-center text-xs uppercase"><span class="bg-white dark:bg-slate-900 px-2 text-slate-400">Or continue with</span></div>
+            </div>
+
+            <!-- Google OAuth Button -->
+            <button type="button" onclick="loginWithGoogle()" class="w-full py-2.5 px-4 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-sm font-medium rounded-xl border border-slate-300 dark:border-slate-700 transition-all flex items-center justify-center gap-2.5 shadow-sm">
+              <svg class="w-4 h-4" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+              </svg>
+              Sign in with Google
+            </button>
+
+            <!-- Quick Demo Button -->
+            <button type="button" onclick="enableDemoMode()" class="w-full mt-2 py-2 px-3 text-xs text-brand-600 dark:text-brand-400 hover:underline text-center">
+              ⚡ Try Interactive Demo (No Login Required)
+            </button>
+          </div>
+
+          <p id="authMessage" class="text-xs text-red-500 dark:text-red-400 text-center font-medium min-h-[20px] mt-2"></p>
+        </form>
+      </div>
+    </div>
+
+    <!-- MAIN DASHBOARD APP SECTION -->
+    <div id="appSection" class="hidden space-y-6">
+
+      <!-- Top Summary Metrics Cards Bar -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Current Balance -->
+        <div class="glass-card p-5 rounded-2xl shadow-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Latest Balance</span>
+            <span class="p-2 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 rounded-xl">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </span>
+          </div>
+          <p id="metricCurrent" class="text-2xl font-bold text-slate-900 dark:text-white mt-2">$0.00</p>
+          <div id="metricChangeBadge" class="mt-2 inline-flex items-center text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+            No history yet
+          </div>
+        </div>
+
+        <!-- Highest Balance -->
+        <div class="glass-card p-5 rounded-2xl shadow-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Highest Recorded</span>
+            <span class="p-2 bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 rounded-xl">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+            </span>
+          </div>
+          <p id="metricHighest" class="text-2xl font-bold text-slate-900 dark:text-white mt-2">$0.00</p>
+          <p id="metricHighestDate" class="text-xs text-slate-400 mt-2">—</p>
+        </div>
+
+        <!-- Lowest Balance -->
+        <div class="glass-card p-5 rounded-2xl shadow-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Lowest Recorded</span>
+            <span class="p-2 bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 rounded-xl">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"/></svg>
+            </span>
+          </div>
+          <p id="metricLowest" class="text-2xl font-bold text-slate-900 dark:text-white mt-2">$0.00</p>
+          <p id="metricLowestDate" class="text-xs text-slate-400 mt-2">—</p>
+        </div>
+
+        <!-- Total Logs Count -->
+        <div class="glass-card p-5 rounded-2xl shadow-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Total Records</span>
+            <span class="p-2 bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 rounded-xl">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+            </span>
+          </div>
+          <p id="metricTotalLogs" class="text-2xl font-bold text-slate-900 dark:text-white mt-2">0</p>
+          <p class="text-xs text-slate-400 mt-2">Tracked balance points</p>
+        </div>
+      </div>
+
+      <!-- Chart Visualizer Card -->
+      <div class="glass-card rounded-2xl p-6 shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div>
+            <h3 class="text-lg font-bold text-slate-900 dark:text-white">Balance Trajectory</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Visual trend of your total bank balance over time</p>
+          </div>
+          
+          <div class="flex items-center gap-2">
+            <button onclick="resetChartZoom()" class="px-3 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors">
+              Refresh Chart
+            </button>
+          </div>
+        </div>
+
+        <div class="relative h-[320px] w-full">
+          <canvas id="balanceChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Split Grid Layout for Input Form and History Table -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Add / Edit Entry Card (1 Column) -->
+        <div class="glass-card rounded-2xl p-6 shadow-sm h-fit">
+          <div class="flex items-center justify-between mb-4">
+            <h3 id="formTitle" class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <svg class="w-5 h-5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+              Add New Balance
+            </h3>
+          </div>
+
+          <form onsubmit="event.preventDefault();" class="space-y-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Date</label>
+              <input type="date" id="dateInput" class="w-full px-3.5 py-2 text-sm bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-slate-900 dark:text-white outline-none">
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Balance Amount ($)</label>
+              <div class="relative">
+                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 font-semibold">$</span>
+                <input type="number" id="balanceInput" placeholder="0.00" step="0.01" class="w-full pl-8 pr-3.5 py-2 text-sm bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-slate-900 dark:text-white outline-none">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Note / Tag (Optional)</label>
+              <input type="text" id="noteInput" placeholder="e.g. Paycheck, Rent, Savings bump" class="w-full px-3.5 py-2 text-sm bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-slate-900 dark:text-white outline-none">
+            </div>
+
+            <div class="pt-2 flex flex-col gap-2">
+              <button id="saveBtn" type="button" onclick="saveBalance()" class="w-full py-2.5 px-4 bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold rounded-xl shadow-md shadow-brand-500/20 active:scale-[0.99] transition-all flex items-center justify-center gap-2">
+                Save Balance Entry
+              </button>
+              
+              <button id="cancelEditBtn" type="button" onclick="cancelEdit()" class="hidden w-full py-2 px-4 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-medium rounded-xl transition-all">
+                Cancel Editing
+              </button>
+            </div>
+            
+            <p id="saveMessage" class="text-xs text-center font-medium min-h-[16px]"></p>
+          </form>
+        </div>
+
+        <!-- History & Table View (2 Columns) -->
+        <div class="glass-card rounded-2xl p-6 shadow-sm lg:col-span-2">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+            <div>
+              <h3 class="text-base font-bold text-slate-900 dark:text-white">Recorded History</h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400">All saved balance snapshots sorted by date</p>
+            </div>
+
+            <!-- Table Search Input -->
+            <div class="relative w-full sm:w-48">
+              <span class="absolute inset-y-0 left-0 pl-2.5 flex items-center text-slate-400">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+              </span>
+              <input type="text" id="searchInput" oninput="filterHistoryTable()" placeholder="Search notes or dates..." class="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-brand-500">
+            </div>
+          </div>
+
+          <!-- Table Container -->
+          <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-100/80 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 uppercase font-semibold border-b border-slate-200 dark:border-slate-800">
+                <tr>
+                  <th class="px-4 py-3">Date</th>
+                  <th class="px-4 py-3">Balance Amount</th>
+                  <th class="px-4 py-3">Note / Details</th>
+                  <th class="px-4 py-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="historyBody" class="divide-y divide-slate-200 dark:divide-slate-800 text-slate-700 dark:text-slate-300">
+                <!-- Rows injected dynamically -->
+              </tbody>
+            </table>
+
+            <!-- Empty State Placeholder -->
+            <div id="emptyState" class="hidden py-12 text-center">
+              <svg class="w-12 h-12 mx-auto text-slate-300 dark:text-slate-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+              <p class="text-sm font-semibold text-slate-600 dark:text-slate-400">No balance records found</p>
+              <p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Use the form on the left to add your first balance entry.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Delete Modal Dialog -->
+  <div id="deleteModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm transition-opacity">
+    <div class="glass-card max-w-sm w-full rounded-2xl p-6 shadow-2xl border border-slate-200 dark:border-slate-800 text-center animate-in fade-in zoom-in duration-200">
+      <div class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-950/60 text-red-600 dark:text-red-400 flex items-center justify-center mx-auto mb-4">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+      </div>
+      <h3 class="text-lg font-bold text-slate-900 dark:text-white">Delete Entry?</h3>
+      <p id="deleteModalText" class="text-xs text-slate-500 dark:text-slate-400 mt-1 mb-6">Are you sure you want to delete this balance entry? This action cannot be undone.</p>
+      
+      <div class="flex gap-3">
+        <button onclick="closeDeleteModal()" class="w-1/2 py-2 px-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold rounded-xl transition-all">
+          Cancel
+        </button>
+        <button id="confirmDeleteBtn" class="w-1/2 py-2 px-4 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-xl shadow-md shadow-red-500/20 transition-all">
+          Delete
+        </button>
+      </div>
+    </div>
   </div>
 
-  <!-- Main App -->
-  <div id="appSection" class="hidden">
-    <div class="card">
-      <p>Logged in as: <strong id="userEmail"></strong><button class="secondary" onclick="logout()" style="float:right;">Logout</button></p>
+  <!-- Footer -->
+  <footer class="mt-auto border-t border-slate-200 dark:border-slate-800 py-4 bg-white/50 dark:bg-slate-900/50">
+    <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-400">
+      FinFlow Balance Tracker &bull; Secured with Firebase
     </div>
-    <div class="card">
-      <h3>Balance Over Time</h3>
-      <div id="chartContainer"><canvas id="balanceChart"></canvas></div>
-    </div>
-    <div class="card">
-      <h3 id="formTitle">Add New Balance</h3>
-      <input type="date" id="dateInput">
-      <input type="number" id="balanceInput" placeholder="Balance" step="0.01">
-      <input type="text" id="noteInput" placeholder="Note (optional)" style="width:200px;"><br>
-      <button id="saveBtn" onclick="saveBalance()">Save Balance</button>
-      <button id="cancelEditBtn" class="secondary hidden" onclick="cancelEdit()">Cancel Edit</button>
-      <p id="saveMessage"></p>
-    </div>
-    <div class="card">
-      <h3>History</h3>
-      <table>
-        <thead><tr><th>Date</th><th>Balance</th><th>Note</th><th>Actions</th></tr></thead>
-        <tbody id="historyBody"></tbody>
-      </table>
-    </div>
-  </div>
+  </footer>
 
   <script type="module">
+    // Firebase Configuration
     const firebaseConfig = {
       apiKey: "AIzaSyAksDtCFT3uW6a7VnEe0ZdlwSKS-8Fb6j4",
       authDomain: "bank-tracker-8bf36.firebaseapp.com",
@@ -97,12 +426,22 @@
       orderBy
     } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+    // Initialize Firebase
+    let app, auth, db;
+    try {
+      app = initializeApp(firebaseConfig);
+      auth = getAuth(app);
+      db = getFirestore(app);
+    } catch (e) {
+      console.warn("Firebase initialization warning:", e);
+    }
 
+    // Application state
     let chartInstance = null;
     let editingDate = null;
+    let cachedEntries = [];
+    let isDemoMode = false;
+    let pendingDeleteDate = null;
 
     window.login = login;
     window.signup = signup;
@@ -112,35 +451,104 @@
     window.cancelEdit = cancelEdit;
     window.editEntry = editEntry;
     window.deleteEntry = deleteEntry;
+    window.enableDemoMode = enableDemoMode;
+    window.toggleDarkMode = toggleDarkMode;
+    window.filterHistoryTable = filterHistoryTable;
+    window.closeDeleteModal = closeDeleteModal;
+    window.resetChartZoom = resetChartZoom;
 
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        document.getElementById("loginSection").classList.add("hidden");
-        document.getElementById("appSection").classList.remove("hidden");
-        document.getElementById("userEmail").textContent = user.email || user.displayName;
-        loadHistory();
-      } else {
-        document.getElementById("loginSection").classList.remove("hidden");
-        document.getElementById("appSection").classList.add("hidden");
-      }
-    });
+    // Theme Management
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      document.documentElement.classList.add('dark');
+      updateThemeIcons();
+    }
+
+    function toggleDarkMode() {
+      document.documentElement.classList.toggle('dark');
+      updateThemeIcons();
+      if (cachedEntries.length) renderChart(cachedEntries);
+    }
+
+    function updateThemeIcons() {
+      const isDark = document.documentElement.classList.contains('dark');
+      document.getElementById('sunIcon').classList.toggle('hidden', !isDark);
+      document.getElementById('moonIcon').classList.toggle('hidden', isDark);
+    }
+
+    // Auth Listener
+    if (auth) {
+      onAuthStateChanged(auth, (user) => {
+        if (user && !isDemoMode) {
+          document.getElementById("loginSection").classList.add("hidden");
+          document.getElementById("appSection").classList.remove("hidden");
+          document.getElementById("userHeaderProfile").classList.remove("hidden");
+          document.getElementById("demoBadge").classList.add("hidden");
+          document.getElementById("userEmail").textContent = user.email || user.displayName || "User";
+          loadHistory();
+        } else if (!isDemoMode) {
+          document.getElementById("loginSection").classList.remove("hidden");
+          document.getElementById("appSection").classList.add("hidden");
+          document.getElementById("userHeaderProfile").classList.add("hidden");
+        }
+      });
+    }
+
+    // Toast Notification helper
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      
+      const bgColors = {
+        success: 'bg-emerald-600 text-white',
+        error: 'bg-red-600 text-white',
+        info: 'bg-slate-800 text-white dark:bg-slate-100 dark:text-slate-900'
+      };
+
+      toast.className = `${bgColors[type] || bgColors.info} px-4 py-3 rounded-xl shadow-lg text-xs font-medium flex items-center justify-between pointer-events-auto transition-all duration-300 transform translate-y-2 opacity-0`;
+      toast.innerHTML = `<span>${message}</span>`;
+      
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      }, 10);
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
 
     async function login() {
       const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;
+      if (!email || !password) {
+        document.getElementById("authMessage").textContent = "Please enter both email and password.";
+        return;
+      }
       try {
         await signInWithEmailAndPassword(auth, email, password);
         document.getElementById("authMessage").textContent = "";
-      } catch (e) { document.getElementById("authMessage").textContent = e.message; }
+        showToast("Signed in successfully", "success");
+      } catch (e) {
+        document.getElementById("authMessage").textContent = e.message;
+      }
     }
 
     async function signup() {
       const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;
+      if (!email || !password) {
+        document.getElementById("authMessage").textContent = "Please enter both email and password.";
+        return;
+      }
       try {
         await createUserWithEmailAndPassword(auth, email, password);
         document.getElementById("authMessage").textContent = "";
-      } catch (e) { document.getElementById("authMessage").textContent = e.message; }
+        showToast("Account created successfully", "success");
+      } catch (e) {
+        document.getElementById("authMessage").textContent = e.message;
+      }
     }
 
     async function loginWithGoogle() {
@@ -148,23 +556,75 @@
       try {
         await signInWithPopup(auth, provider);
         document.getElementById("authMessage").textContent = "";
-      } catch (e) { document.getElementById("authMessage").textContent = e.message; }
+        showToast("Signed in with Google", "success");
+      } catch (e) {
+        document.getElementById("authMessage").textContent = e.message;
+      }
     }
 
-    function logout() { signOut(auth); }
+    function logout() {
+      if (isDemoMode) {
+        isDemoMode = false;
+        document.getElementById("loginSection").classList.remove("hidden");
+        document.getElementById("appSection").classList.add("hidden");
+        document.getElementById("userHeaderProfile").classList.add("hidden");
+        showToast("Exited demo mode", "info");
+      } else if (auth) {
+        signOut(auth);
+        showToast("Signed out", "info");
+      }
+    }
+
+    // Demo Mode Loader
+    function enableDemoMode() {
+      isDemoMode = true;
+      document.getElementById("loginSection").classList.add("hidden");
+      document.getElementById("appSection").classList.remove("hidden");
+      document.getElementById("userHeaderProfile").classList.remove("hidden");
+      document.getElementById("demoBadge").classList.remove("hidden");
+      document.getElementById("userEmail").textContent = "demo.user@finflow.app";
+
+      // Mock Data
+      cachedEntries = [
+        { id: "2026-03-01", balance: 12450.00, note: "Monthly Salary" },
+        { id: "2026-03-05", balance: 11200.50, note: "Rent & Bills" },
+        { id: "2026-03-12", balance: 11800.00, note: "Freelance Client Payout" },
+        { id: "2026-03-20", balance: 11450.25, note: "Groceries & Shopping" },
+        { id: "2026-03-28", balance: 13100.00, note: "Bonus & Investments" },
+      ];
+
+      renderDashboard(cachedEntries);
+      showToast("Interactive demo mode activated", "info");
+    }
 
     async function saveBalance() {
-      const user = auth.currentUser;
-      if (!user) return;
       const date = document.getElementById("dateInput").value;
       const balance = parseFloat(document.getElementById("balanceInput").value);
       const note = document.getElementById("noteInput").value.trim();
 
       if (!date || isNaN(balance)) {
-        document.getElementById("saveMessage").textContent = "Please enter both date and balance";
-        document.getElementById("saveMessage").style.color = "#dc2626";
+        document.getElementById("saveMessage").textContent = "Please enter both date and balance amount.";
+        document.getElementById("saveMessage").className = "text-xs text-center font-medium text-red-500 mt-2";
         return;
       }
+
+      if (isDemoMode) {
+        const existingIdx = cachedEntries.findIndex(e => e.id === date);
+        if (existingIdx >= 0) {
+          cachedEntries[existingIdx] = { id: date, balance, note };
+        } else {
+          cachedEntries.push({ id: date, balance, note });
+        }
+        cachedEntries.sort((a, b) => b.id.localeCompare(a.id));
+        renderDashboard(cachedEntries);
+        showToast("Demo balance saved successfully!", "success");
+        cancelEdit();
+        return;
+      }
+
+      const user = auth.currentUser;
+      if (!user) return;
+
       try {
         await setDoc(doc(db, "users", user.uid, "balances", date), {
           balance: balance,
@@ -172,13 +632,12 @@
           createdAt: new Date(),
           updatedAt: new Date()
         });
-        document.getElementById("saveMessage").textContent = editingDate ? "Updated successfully!" : "Saved successfully!";
-        document.getElementById("saveMessage").style.color = "#16a34a";
+        showToast(editingDate ? "Updated successfully!" : "Saved balance entry!", "success");
         cancelEdit();
         loadHistory();
       } catch (e) {
         document.getElementById("saveMessage").textContent = e.message;
-        document.getElementById("saveMessage").style.color = "#dc2626";
+        document.getElementById("saveMessage").className = "text-xs text-center font-medium text-red-500 mt-2";
       }
     }
 
@@ -187,9 +646,13 @@
       document.getElementById("dateInput").value = date;
       document.getElementById("balanceInput").value = balance;
       document.getElementById("noteInput").value = note || "";
-      document.getElementById("formTitle").textContent = "Edit Balance";
+      document.getElementById("formTitle").innerHTML = `
+        <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+        Edit Balance Snapshot
+      `;
       document.getElementById("saveBtn").textContent = "Update Balance";
       document.getElementById("cancelEditBtn").classList.remove("hidden");
+      window.scrollTo({ top: document.getElementById("dateInput").offsetTop - 100, behavior: 'smooth' });
     }
 
     function cancelEdit() {
@@ -197,74 +660,274 @@
       document.getElementById("dateInput").valueAsDate = new Date();
       document.getElementById("balanceInput").value = "";
       document.getElementById("noteInput").value = "";
-      document.getElementById("formTitle").textContent = "Add New Balance";
-      document.getElementById("saveBtn").textContent = "Save Balance";
+      document.getElementById("saveMessage").textContent = "";
+      document.getElementById("formTitle").innerHTML = `
+        <svg class="w-5 h-5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+        Add New Balance
+      `;
+      document.getElementById("saveBtn").textContent = "Save Balance Entry";
       document.getElementById("cancelEditBtn").classList.add("hidden");
     }
 
-    async function deleteEntry(date) {
-      if (!confirm(`Delete entry for ${date}?`)) return;
-      const user = auth.currentUser;
-      try {
-        await deleteDoc(doc(db, "users", user.uid, "balances", date));
-        loadHistory();
-      } catch (e) { alert("Error deleting: " + e.message); }
+    function deleteEntry(date) {
+      pendingDeleteDate = date;
+      document.getElementById("deleteModalText").textContent = `Are you sure you want to delete the balance snapshot for ${date}?`;
+      document.getElementById("deleteModal").classList.remove("hidden");
+      
+      document.getElementById("confirmDeleteBtn").onclick = async () => {
+        if (isDemoMode) {
+          cachedEntries = cachedEntries.filter(e => e.id !== pendingDeleteDate);
+          renderDashboard(cachedEntries);
+          showToast("Entry deleted", "info");
+          closeDeleteModal();
+          return;
+        }
+
+        const user = auth.currentUser;
+        if (!user) return;
+        try {
+          await deleteDoc(doc(db, "users", user.uid, "balances", pendingDeleteDate));
+          showToast("Entry deleted", "info");
+          closeDeleteModal();
+          loadHistory();
+        } catch (e) {
+          showToast("Error deleting: " + e.message, "error");
+          closeDeleteModal();
+        }
+      };
+    }
+
+    function closeDeleteModal() {
+      document.getElementById("deleteModal").classList.add("hidden");
+      pendingDeleteDate = null;
     }
 
     async function loadHistory() {
       const user = auth.currentUser;
       if (!user) return;
-      const q = query(collection(db, "users", user.uid, "balances"), orderBy("createdAt", "desc"));
-      const snapshot = await getDocs(q);
-      const tbody = document.getElementById("historyBody");
-      tbody.innerHTML = "";
-      const chartLabels = [];
-      const chartData = [];
-      const entries = [];
-      snapshot.forEach(docSnap => entries.push({ id: docSnap.id, ...docSnap.data() }));
-      const sortedForChart = [...entries].sort((a, b) => a.id.localeCompare(b.id));
-      sortedForChart.forEach(entry => {
-        chartLabels.push(entry.id);
-        chartData.push(entry.balance);
-      });
-      entries.forEach((entry) => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${entry.id}</td>
-          <td>${entry.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-          <td>${entry.note || "—"}</td>
-          <td class="actions">
-            <button onclick="editEntry('${entry.id}', ${entry.balance}, '${(entry.note || "").replace(/'/g, "\\'")}')">Edit</button>
-            <button class="danger" onclick="deleteEntry('${entry.id}')">Delete</button>
-          </td>
-        `;
-        tbody.appendChild(row);
-      });
-      updateChart(chartLabels, chartData);
+
+      try {
+        const q = query(collection(db, "users", user.uid, "balances"), orderBy("createdAt", "desc"));
+        const snapshot = await getDocs(q);
+        cachedEntries = [];
+        snapshot.forEach(docSnap => cachedEntries.push({ id: docSnap.id, ...docSnap.data() }));
+        
+        renderDashboard(cachedEntries);
+      } catch (e) {
+        console.error("Error loading history:", e);
+        showToast("Error loading data: " + e.message, "error");
+      }
     }
 
-    function updateChart(labels, data) {
-      const ctx = document.getElementById("balanceChart").getContext("2d");
+    function renderDashboard(entries) {
+      renderTable(entries);
+      updateMetrics(entries);
+      renderChart(entries);
+    }
+
+    function updateMetrics(entries) {
+      if (!entries || entries.length === 0) {
+        document.getElementById("metricCurrent").textContent = "$0.00";
+        document.getElementById("metricHighest").textContent = "$0.00";
+        document.getElementById("metricLowest").textContent = "$0.00";
+        document.getElementById("metricHighestDate").textContent = "—";
+        document.getElementById("metricLowestDate").textContent = "—";
+        document.getElementById("metricTotalLogs").textContent = "0";
+        document.getElementById("metricChangeBadge").className = "mt-2 inline-flex items-center text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400";
+        document.getElementById("metricChangeBadge").textContent = "No history";
+        return;
+      }
+
+      // Sorted by date ascending for metrics calculation
+      const dateSorted = [...entries].sort((a, b) => a.id.localeCompare(b.id));
+      const latestEntry = dateSorted[dateSorted.length - 1];
+      const prevEntry = dateSorted.length > 1 ? dateSorted[dateSorted.length - 2] : null;
+
+      // Current
+      document.getElementById("metricCurrent").textContent = formatCurrency(latestEntry.balance);
+
+      // Change calculation vs previous entry
+      const badge = document.getElementById("metricChangeBadge");
+      if (prevEntry) {
+        const diff = latestEntry.balance - prevEntry.balance;
+        const percent = prevEntry.balance !== 0 ? ((diff / prevEntry.balance) * 100).toFixed(1) : 0;
+        if (diff >= 0) {
+          badge.className = "mt-2 inline-flex items-center text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300";
+          badge.innerHTML = `↑ +${formatCurrency(diff)} (${percent}%)`;
+        } else {
+          badge.className = "mt-2 inline-flex items-center text-xs font-semibold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300";
+          badge.innerHTML = `↓ ${formatCurrency(diff)} (${percent}%)`;
+        }
+      } else {
+        badge.className = "mt-2 inline-flex items-center text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400";
+        badge.textContent = "First log point";
+      }
+
+      // Highest & Lowest
+      let maxVal = -Infinity, minVal = Infinity;
+      let maxEntry = null, minEntry = null;
+
+      entries.forEach(e => {
+        if (e.balance > maxVal) { maxVal = e.balance; maxEntry = e; }
+        if (e.balance < minVal) { minVal = e.balance; minEntry = e; }
+      });
+
+      document.getElementById("metricHighest").textContent = formatCurrency(maxVal);
+      document.getElementById("metricHighestDate").textContent = `Recorded on ${maxEntry?.id || '—'}`;
+
+      document.getElementById("metricLowest").textContent = formatCurrency(minVal);
+      document.getElementById("metricLowestDate").textContent = `Recorded on ${minEntry?.id || '—'}`;
+
+      document.getElementById("metricTotalLogs").textContent = entries.length;
+    }
+
+    function renderTable(entries) {
+      const tbody = document.getElementById("historyBody");
+      const emptyState = document.getElementById("emptyState");
+      tbody.innerHTML = "";
+
+      if (!entries || entries.length === 0) {
+        emptyState.classList.remove("hidden");
+        return;
+      }
+
+      emptyState.classList.add("hidden");
+
+      entries.forEach((entry) => {
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors";
+        
+        tr.innerHTML = `
+          <td class="px-4 py-3 font-medium text-slate-900 dark:text-white whitespace-nowrap">${entry.id}</td>
+          <td class="px-4 py-3 font-semibold text-slate-900 dark:text-white whitespace-nowrap">${formatCurrency(entry.balance)}</td>
+          <td class="px-4 py-3 text-slate-500 dark:text-slate-400">
+            ${entry.note ? `<span class="inline-block px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 text-[11px] font-medium">${escapeHtml(entry.note)}</span>` : '<span class="text-slate-300 dark:text-slate-600">—</span>'}
+          </td>
+          <td class="px-4 py-3 text-right whitespace-nowrap">
+            <button onclick="editEntry('${entry.id}', ${entry.balance}, '${(entry.note || "").replace(/'/g, "\\'")}')" class="p-1.5 text-slate-500 hover:text-brand-600 dark:hover:text-brand-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors mr-1" title="Edit">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+            </button>
+            <button onclick="deleteEntry('${entry.id}')" class="p-1.5 text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Delete">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function filterHistoryTable() {
+      const query = document.getElementById("searchInput").value.toLowerCase();
+      const filtered = cachedEntries.filter(entry => 
+        entry.id.toLowerCase().includes(query) || 
+        (entry.note && entry.note.toLowerCase().includes(query))
+      );
+      renderTable(filtered);
+    }
+
+    function renderChart(entries) {
+      const canvas = document.getElementById("balanceChart");
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      
+      const sortedForChart = [...entries].sort((a, b) => a.id.localeCompare(b.id));
+      const labels = sortedForChart.map(e => e.id);
+      const data = sortedForChart.map(e => e.balance);
+
+      const isDark = document.documentElement.classList.contains("dark");
+      const gridColor = isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.05)";
+      const textColor = isDark ? "#94a3b8" : "#64748b";
+
+      // Create Gradient Fill
+      const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+      if (isDark) {
+        gradient.addColorStop(0, "rgba(59, 130, 246, 0.35)");
+        gradient.addColorStop(1, "rgba(59, 130, 246, 0.0)");
+      } else {
+        gradient.addColorStop(0, "rgba(37, 99, 235, 0.25)");
+        gradient.addColorStop(1, "rgba(37, 99, 235, 0.0)");
+      }
+
       if (chartInstance) chartInstance.destroy();
+
       chartInstance = new Chart(ctx, {
         type: "line",
         data: {
           labels: labels,
           datasets: [{
+            label: "Balance ($)",
             data: data,
             borderColor: "#2563eb",
-            backgroundColor: "rgba(37, 99, 235, 0.1)",
+            borderWidth: 3,
+            backgroundColor: gradient,
             fill: true,
-            tension: 0.3
+            tension: 0.35,
+            pointBackgroundColor: "#2563eb",
+            pointBorderColor: isDark ? "#0f172a" : "#ffffff",
+            pointBorderWidth: 2,
+            pointRadius: 5,
+            pointHoverRadius: 7
           }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: { legend: { display: false } }
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: isDark ? "#1e293b" : "#ffffff",
+              titleColor: isDark ? "#f8fafc" : "#0f172a",
+              bodyColor: isDark ? "#cbd5e1" : "#334155",
+              borderColor: isDark ? "#334155" : "#e2e8f0",
+              borderWidth: 1,
+              padding: 12,
+              cornerRadius: 12,
+              displayColors: false,
+              callbacks: {
+                label: function(context) {
+                  return ` Balance: ${formatCurrency(context.parsed.y)}`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: gridColor },
+              ticks: { color: textColor, font: { family: 'Inter', size: 11 } }
+            },
+            y: {
+              grid: { color: gridColor },
+              ticks: {
+                color: textColor,
+                font: { family: 'Inter', size: 11 },
+                callback: function(value) { return '$' + value.toLocaleString(); }
+              }
+            }
+          }
         }
       });
     }
+
+    function resetChartZoom() {
+      if (cachedEntries.length) renderChart(cachedEntries);
+    }
+
+    // Utility Helpers
+    function formatCurrency(num) {
+      return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(num || 0);
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/[&<>"']/g, (m) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      })[m]);
+    }
+
+    // Set Default Date Input to Today
     document.getElementById("dateInput").valueAsDate = new Date();
   </script>
 </body>
