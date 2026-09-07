@@ -200,7 +200,7 @@
     <!-- MAIN DASHBOARD APP SECTION -->
     <div id="appSection" class="hidden space-y-6">
 
-      <!-- Top Summary Metrics Cards Bar (Mobile responsive 2-column to 5-column grid) -->
+      <!-- Top Summary Metrics Cards Bar -->
       <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5 sm:gap-4">
         <!-- Current Balance -->
         <div class="glass-card p-4 sm:p-5 rounded-2xl shadow-sm col-span-2 sm:col-span-1">
@@ -285,7 +285,7 @@
         </div>
       </div>
 
-      <!-- Monthly Summary & Financial Insights Section -->
+      <!-- Monthly Summary Section -->
       <div class="glass-card rounded-2xl p-4 sm:p-6 shadow-sm">
         <div class="flex items-center justify-between mb-4">
           <div>
@@ -450,7 +450,9 @@
       signOut,
       onAuthStateChanged,
       GoogleAuthProvider,
-      signInWithPopup
+      signInWithPopup,
+      signInWithRedirect,
+      getRedirectResult
     } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
     import {
       getFirestore,
@@ -469,6 +471,17 @@
       app = initializeApp(firebaseConfig);
       auth = getAuth(app);
       db = getFirestore(app);
+
+      // Handle redirect authentication result on page reload (Mobile / Redirect fallback)
+      getRedirectResult(auth).then((result) => {
+        if (result && result.user) {
+          showToast("Signed in with Google", "success");
+        }
+      }).catch((e) => {
+        if (e && e.message) {
+          document.getElementById("authMessage").textContent = e.message;
+        }
+      });
     } catch (e) {
       console.warn("Firebase initialization warning:", e);
     }
@@ -589,14 +602,36 @@
       }
     }
 
+    // Mobile & Popup-block friendly Google Auth handler
     async function loginWithGoogle() {
       const provider = new GoogleAuthProvider();
-      try {
-        await signInWithPopup(auth, provider);
-        document.getElementById("authMessage").textContent = "";
-        showToast("Signed in with Google", "success");
-      } catch (e) {
-        document.getElementById("authMessage").textContent = e.message;
+      // Detect Android/iOS mobile devices or mobile web views
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+      if (isMobile) {
+        // Use redirect on Android/iOS mobile browsers to avoid popup blocker completely
+        try {
+          await signInWithRedirect(auth, provider);
+        } catch (e) {
+          document.getElementById("authMessage").textContent = e.message;
+        }
+      } else {
+        // Try popup on desktop, with seamless fallback to redirect if popups are blocked
+        try {
+          await signInWithPopup(auth, provider);
+          document.getElementById("authMessage").textContent = "";
+          showToast("Signed in with Google", "success");
+        } catch (e) {
+          if (e.code === 'auth/popup-blocked' || e.code === 'auth/cancelled-popup-request') {
+            try {
+              await signInWithRedirect(auth, provider);
+            } catch (err) {
+              document.getElementById("authMessage").textContent = err.message;
+            }
+          } else {
+            document.getElementById("authMessage").textContent = e.message;
+          }
+        }
       }
     }
 
@@ -779,16 +814,13 @@
         return;
       }
 
-      // Sorted by date ascending for metrics calculation
       const dateSorted = [...entries].sort((a, b) => a.id.localeCompare(b.id));
       const latestEntry = dateSorted[dateSorted.length - 1];
       const earliestEntry = dateSorted[0];
       const prevEntry = dateSorted.length > 1 ? dateSorted[dateSorted.length - 2] : null;
 
-      // Current Balance
       document.getElementById("metricCurrent").textContent = formatCurrency(latestEntry.balance);
 
-      // Total Overall Growth (from earliest entry to latest)
       const overallDiff = latestEntry.balance - earliestEntry.balance;
       const overallPct = earliestEntry.balance !== 0 ? ((overallDiff / earliestEntry.balance) * 100).toFixed(1) : 0;
       const growthElem = document.getElementById("metricTotalGrowth");
@@ -805,7 +837,6 @@
         growthPctElem.className = "text-xs font-medium text-rose-600 dark:text-rose-400 mt-2";
       }
 
-      // Change calculation vs previous entry
       const badge = document.getElementById("metricChangeBadge");
       if (prevEntry) {
         const diff = latestEntry.balance - prevEntry.balance;
@@ -822,7 +853,6 @@
         badge.textContent = "First log point";
       }
 
-      // Highest & Lowest
       let maxVal = -Infinity, minVal = Infinity;
       let maxEntry = null, minEntry = null;
 
@@ -840,7 +870,6 @@
       document.getElementById("metricTotalLogs").textContent = entries.length;
     }
 
-    // Monthly breakdown summary calculator
     function updateMonthlyBreakdown(entries) {
       const container = document.getElementById("monthlyBreakdownContainer");
       if (!container) return;
@@ -851,19 +880,18 @@
         return;
       }
 
-      // Group entries by YYYY-MM
       const monthlyGroups = {};
       const sorted = [...entries].sort((a, b) => a.id.localeCompare(b.id));
 
       sorted.forEach(entry => {
-        const monthKey = entry.id.substring(0, 7); // e.g. "2026-03"
+        const monthKey = entry.id.substring(0, 7);
         if (!monthlyGroups[monthKey]) {
           monthlyGroups[monthKey] = [];
         }
         monthlyGroups[monthKey].push(entry);
       });
 
-      const months = Object.keys(monthlyGroups).sort().reverse(); // recent first
+      const months = Object.keys(monthlyGroups).sort().reverse();
 
       months.forEach(monthKey => {
         const group = monthlyGroups[monthKey];
@@ -872,7 +900,6 @@
         const diff = endBalance - startBalance;
         const pct = startBalance !== 0 ? ((diff / startBalance) * 100).toFixed(1) : 0;
 
-        // Formatted month title (e.g. March 2026)
         const dateObj = new Date(`${monthKey}-01T00:00:00`);
         const monthLabel = dateObj.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
 
@@ -898,7 +925,6 @@
       });
     }
 
-    // CSV Export Logic
     function exportToCSV() {
       if (!cachedEntries || cachedEntries.length === 0) {
         showToast("No data to export", "error");
@@ -983,7 +1009,6 @@
       const gridColor = isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.05)";
       const textColor = isDark ? "#94a3b8" : "#64748b";
 
-      // Create Gradient Fill
       const gradient = ctx.createLinearGradient(0, 0, 0, 300);
       if (isDark) {
         gradient.addColorStop(0, "rgba(59, 130, 246, 0.35)");
@@ -1057,7 +1082,6 @@
       if (cachedEntries.length) renderChart(cachedEntries);
     }
 
-    // Utility Helpers
     function formatCurrency(num) {
       return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(num || 0);
     }
@@ -1072,7 +1096,6 @@
       })[m]);
     }
 
-    // Set Default Date Input to Today
     document.getElementById("dateInput").valueAsDate = new Date();
   </script>
 </body>
