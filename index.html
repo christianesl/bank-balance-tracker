@@ -109,7 +109,7 @@
             <p id="userEmail" class="text-xs font-semibold text-slate-700 dark:text-slate-200 max-w-[150px] truncate"></p>
             <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">● Connected</span>
           </div>
-          <button onclick="logout()" class="px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors border border-slate-200 dark:border-slate-700">
+          <button onclick="logout()" class="px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl transition-colors border border-slate-200 dark:border-slate-700 active:scale-95 touch-manipulation">
             Sign Out
           </button>
         </div>
@@ -200,61 +200,73 @@
     <!-- MAIN DASHBOARD APP SECTION -->
     <div id="appSection" class="hidden space-y-6">
 
-      <!-- Top Summary Metrics Cards Bar -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <!-- Top Summary Metrics Cards Bar (Mobile responsive 2-column to 5-column grid) -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5 sm:gap-4">
         <!-- Current Balance -->
-        <div class="glass-card p-5 rounded-2xl shadow-sm">
+        <div class="glass-card p-4 sm:p-5 rounded-2xl shadow-sm col-span-2 sm:col-span-1">
           <div class="flex items-center justify-between">
             <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Latest Balance</span>
             <span class="p-2 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 rounded-xl">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             </span>
           </div>
-          <p id="metricCurrent" class="text-2xl font-bold text-slate-900 dark:text-white mt-2">$0.00</p>
-          <div id="metricChangeBadge" class="mt-2 inline-flex items-center text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+          <p id="metricCurrent" class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mt-2">$0.00</p>
+          <div id="metricChangeBadge" class="mt-2 inline-flex items-center text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400">
             No history yet
           </div>
         </div>
 
-        <!-- Highest Balance -->
-        <div class="glass-card p-5 rounded-2xl shadow-sm">
+        <!-- Total Growth (Overall) -->
+        <div class="glass-card p-4 sm:p-5 rounded-2xl shadow-sm">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Highest Recorded</span>
-            <span class="p-2 bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 rounded-xl">
+            <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Total Growth</span>
+            <span class="p-2 bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 rounded-xl">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
             </span>
           </div>
-          <p id="metricHighest" class="text-2xl font-bold text-slate-900 dark:text-white mt-2">$0.00</p>
-          <p id="metricHighestDate" class="text-xs text-slate-400 mt-2">—</p>
+          <p id="metricTotalGrowth" class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mt-2">$0.00</p>
+          <p id="metricTotalGrowthPct" class="text-xs font-medium text-slate-400 mt-2">0% overall</p>
+        </div>
+
+        <!-- Highest Balance -->
+        <div class="glass-card p-4 sm:p-5 rounded-2xl shadow-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Highest Peak</span>
+            <span class="p-2 bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 rounded-xl">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 11l7-7 7 7M5 19l7-7 7 7"/></svg>
+            </span>
+          </div>
+          <p id="metricHighest" class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mt-2">$0.00</p>
+          <p id="metricHighestDate" class="text-xs text-slate-400 mt-2 truncate">—</p>
         </div>
 
         <!-- Lowest Balance -->
-        <div class="glass-card p-5 rounded-2xl shadow-sm">
+        <div class="glass-card p-4 sm:p-5 rounded-2xl shadow-sm">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Lowest Recorded</span>
+            <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Lowest Floor</span>
             <span class="p-2 bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 rounded-xl">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"/></svg>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 13l-7 7-7-7m14-8l-7 7-7-7"/></svg>
             </span>
           </div>
-          <p id="metricLowest" class="text-2xl font-bold text-slate-900 dark:text-white mt-2">$0.00</p>
-          <p id="metricLowestDate" class="text-xs text-slate-400 mt-2">—</p>
+          <p id="metricLowest" class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mt-2">$0.00</p>
+          <p id="metricLowestDate" class="text-xs text-slate-400 mt-2 truncate">—</p>
         </div>
 
         <!-- Total Logs Count -->
-        <div class="glass-card p-5 rounded-2xl shadow-sm">
+        <div class="glass-card p-4 sm:p-5 rounded-2xl shadow-sm">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Total Records</span>
+            <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Records</span>
             <span class="p-2 bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 rounded-xl">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
             </span>
           </div>
-          <p id="metricTotalLogs" class="text-2xl font-bold text-slate-900 dark:text-white mt-2">0</p>
-          <p class="text-xs text-slate-400 mt-2">Tracked balance points</p>
+          <p id="metricTotalLogs" class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mt-2">0</p>
+          <p class="text-xs text-slate-400 mt-2 truncate">Tracked logs</p>
         </div>
       </div>
 
       <!-- Chart Visualizer Card -->
-      <div class="glass-card rounded-2xl p-6 shadow-sm">
+      <div class="glass-card rounded-2xl p-4 sm:p-6 shadow-sm">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
             <h3 class="text-lg font-bold text-slate-900 dark:text-white">Balance Trajectory</h3>
@@ -262,14 +274,31 @@
           </div>
           
           <div class="flex items-center gap-2">
-            <button onclick="resetChartZoom()" class="px-3 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors">
+            <button onclick="resetChartZoom()" class="px-3.5 py-2 text-xs font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition-all touch-manipulation">
               Refresh Chart
             </button>
           </div>
         </div>
 
-        <div class="relative h-[320px] w-full">
+        <div class="relative h-[260px] sm:h-[320px] w-full">
           <canvas id="balanceChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Monthly Summary & Financial Insights Section -->
+      <div class="glass-card rounded-2xl p-4 sm:p-6 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+              Monthly Summary & Growth
+            </h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Net changes grouped by calendar month</p>
+          </div>
+        </div>
+
+        <div id="monthlyBreakdownContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <!-- Monthly pills rendered dynamically -->
         </div>
       </div>
 
@@ -277,7 +306,7 @@
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
         <!-- Add / Edit Entry Card (1 Column) -->
-        <div class="glass-card rounded-2xl p-6 shadow-sm h-fit">
+        <div class="glass-card rounded-2xl p-5 sm:p-6 shadow-sm h-fit">
           <div class="flex items-center justify-between mb-4">
             <h3 id="formTitle" class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
               <svg class="w-5 h-5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
@@ -288,28 +317,28 @@
           <form onsubmit="event.preventDefault();" class="space-y-4">
             <div>
               <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Date</label>
-              <input type="date" id="dateInput" class="w-full px-3.5 py-2 text-sm bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-slate-900 dark:text-white outline-none">
+              <input type="date" id="dateInput" class="w-full px-3.5 py-2.5 text-sm bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-slate-900 dark:text-white outline-none">
             </div>
 
             <div>
               <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Balance Amount ($)</label>
               <div class="relative">
                 <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 font-semibold">$</span>
-                <input type="number" id="balanceInput" placeholder="0.00" step="0.01" class="w-full pl-8 pr-3.5 py-2 text-sm bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-slate-900 dark:text-white outline-none">
+                <input type="number" id="balanceInput" placeholder="0.00" step="0.01" class="w-full pl-8 pr-3.5 py-2.5 text-sm bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-slate-900 dark:text-white outline-none">
               </div>
             </div>
 
             <div>
               <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Note / Tag (Optional)</label>
-              <input type="text" id="noteInput" placeholder="e.g. Paycheck, Rent, Savings bump" class="w-full px-3.5 py-2 text-sm bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-slate-900 dark:text-white outline-none">
+              <input type="text" id="noteInput" placeholder="e.g. Paycheck, Rent, Savings bump" class="w-full px-3.5 py-2.5 text-sm bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-slate-900 dark:text-white outline-none">
             </div>
 
             <div class="pt-2 flex flex-col gap-2">
-              <button id="saveBtn" type="button" onclick="saveBalance()" class="w-full py-2.5 px-4 bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold rounded-xl shadow-md shadow-brand-500/20 active:scale-[0.99] transition-all flex items-center justify-center gap-2">
+              <button id="saveBtn" type="button" onclick="saveBalance()" class="w-full min-h-[44px] py-2.5 px-4 bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold rounded-xl shadow-md shadow-brand-500/20 active:scale-[0.99] transition-all flex items-center justify-center gap-2 touch-manipulation">
                 Save Balance Entry
               </button>
               
-              <button id="cancelEditBtn" type="button" onclick="cancelEdit()" class="hidden w-full py-2 px-4 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-medium rounded-xl transition-all">
+              <button id="cancelEditBtn" type="button" onclick="cancelEdit()" class="hidden w-full min-h-[44px] py-2 px-4 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-medium rounded-xl transition-all touch-manipulation">
                 Cancel Editing
               </button>
             </div>
@@ -319,25 +348,33 @@
         </div>
 
         <!-- History & Table View (2 Columns) -->
-        <div class="glass-card rounded-2xl p-6 shadow-sm lg:col-span-2">
+        <div class="glass-card rounded-2xl p-4 sm:p-6 shadow-sm lg:col-span-2">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
             <div>
               <h3 class="text-base font-bold text-slate-900 dark:text-white">Recorded History</h3>
               <p class="text-xs text-slate-500 dark:text-slate-400">All saved balance snapshots sorted by date</p>
             </div>
 
-            <!-- Table Search Input -->
-            <div class="relative w-full sm:w-48">
-              <span class="absolute inset-y-0 left-0 pl-2.5 flex items-center text-slate-400">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-              </span>
-              <input type="text" id="searchInput" oninput="filterHistoryTable()" placeholder="Search notes or dates..." class="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-brand-500">
+            <!-- Table Search & Export CSV Controls -->
+            <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+              <div class="relative flex-grow sm:flex-grow-0 sm:w-48">
+                <span class="absolute inset-y-0 left-0 pl-2.5 flex items-center text-slate-400">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </span>
+                <input type="text" id="searchInput" oninput="filterHistoryTable()" placeholder="Search..." class="w-full pl-8 pr-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+              </div>
+
+              <!-- CSV Export Button -->
+              <button onclick="exportToCSV()" class="px-3.5 py-2 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/80 rounded-xl transition-all border border-emerald-200 dark:border-emerald-800 flex items-center gap-1.5 touch-manipulation whitespace-nowrap">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                Export CSV
+              </button>
             </div>
           </div>
 
-          <!-- Table Container -->
+          <!-- Table Container with Mobile Scroll Optimization -->
           <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
-            <table class="w-full text-left text-xs">
+            <table class="w-full text-left text-xs min-w-[500px]">
               <thead class="bg-slate-100/80 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 uppercase font-semibold border-b border-slate-200 dark:border-slate-800">
                 <tr>
                   <th class="px-4 py-3">Date</th>
@@ -456,6 +493,7 @@
     window.filterHistoryTable = filterHistoryTable;
     window.closeDeleteModal = closeDeleteModal;
     window.resetChartZoom = resetChartZoom;
+    window.exportToCSV = exportToCSV;
 
     // Theme Management
     if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
@@ -722,12 +760,15 @@
     function renderDashboard(entries) {
       renderTable(entries);
       updateMetrics(entries);
+      updateMonthlyBreakdown(entries);
       renderChart(entries);
     }
 
     function updateMetrics(entries) {
       if (!entries || entries.length === 0) {
         document.getElementById("metricCurrent").textContent = "$0.00";
+        document.getElementById("metricTotalGrowth").textContent = "$0.00";
+        document.getElementById("metricTotalGrowthPct").textContent = "0% overall";
         document.getElementById("metricHighest").textContent = "$0.00";
         document.getElementById("metricLowest").textContent = "$0.00";
         document.getElementById("metricHighestDate").textContent = "—";
@@ -741,10 +782,28 @@
       // Sorted by date ascending for metrics calculation
       const dateSorted = [...entries].sort((a, b) => a.id.localeCompare(b.id));
       const latestEntry = dateSorted[dateSorted.length - 1];
+      const earliestEntry = dateSorted[0];
       const prevEntry = dateSorted.length > 1 ? dateSorted[dateSorted.length - 2] : null;
 
-      // Current
+      // Current Balance
       document.getElementById("metricCurrent").textContent = formatCurrency(latestEntry.balance);
+
+      // Total Overall Growth (from earliest entry to latest)
+      const overallDiff = latestEntry.balance - earliestEntry.balance;
+      const overallPct = earliestEntry.balance !== 0 ? ((overallDiff / earliestEntry.balance) * 100).toFixed(1) : 0;
+      const growthElem = document.getElementById("metricTotalGrowth");
+      const growthPctElem = document.getElementById("metricTotalGrowthPct");
+      
+      growthElem.textContent = `${overallDiff >= 0 ? '+' : ''}${formatCurrency(overallDiff)}`;
+      if (overallDiff >= 0) {
+        growthElem.className = "text-xl sm:text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-2";
+        growthPctElem.textContent = `+${overallPct}% overall growth`;
+        growthPctElem.className = "text-xs font-medium text-emerald-600 dark:text-emerald-400 mt-2";
+      } else {
+        growthElem.className = "text-xl sm:text-2xl font-bold text-rose-600 dark:text-rose-400 mt-2";
+        growthPctElem.textContent = `${overallPct}% overall change`;
+        growthPctElem.className = "text-xs font-medium text-rose-600 dark:text-rose-400 mt-2";
+      }
 
       // Change calculation vs previous entry
       const badge = document.getElementById("metricChangeBadge");
@@ -752,14 +811,14 @@
         const diff = latestEntry.balance - prevEntry.balance;
         const percent = prevEntry.balance !== 0 ? ((diff / prevEntry.balance) * 100).toFixed(1) : 0;
         if (diff >= 0) {
-          badge.className = "mt-2 inline-flex items-center text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300";
+          badge.className = "mt-2 inline-flex items-center text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300";
           badge.innerHTML = `↑ +${formatCurrency(diff)} (${percent}%)`;
         } else {
-          badge.className = "mt-2 inline-flex items-center text-xs font-semibold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300";
+          badge.className = "mt-2 inline-flex items-center text-[11px] font-semibold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300";
           badge.innerHTML = `↓ ${formatCurrency(diff)} (${percent}%)`;
         }
       } else {
-        badge.className = "mt-2 inline-flex items-center text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400";
+        badge.className = "mt-2 inline-flex items-center text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400";
         badge.textContent = "First log point";
       }
 
@@ -773,12 +832,98 @@
       });
 
       document.getElementById("metricHighest").textContent = formatCurrency(maxVal);
-      document.getElementById("metricHighestDate").textContent = `Recorded on ${maxEntry?.id || '—'}`;
+      document.getElementById("metricHighestDate").textContent = `Peak on ${maxEntry?.id || '—'}`;
 
       document.getElementById("metricLowest").textContent = formatCurrency(minVal);
-      document.getElementById("metricLowestDate").textContent = `Recorded on ${minEntry?.id || '—'}`;
+      document.getElementById("metricLowestDate").textContent = `Floor on ${minEntry?.id || '—'}`;
 
       document.getElementById("metricTotalLogs").textContent = entries.length;
+    }
+
+    // Monthly breakdown summary calculator
+    function updateMonthlyBreakdown(entries) {
+      const container = document.getElementById("monthlyBreakdownContainer");
+      if (!container) return;
+      container.innerHTML = "";
+
+      if (!entries || entries.length === 0) {
+        container.innerHTML = `<p class="text-xs text-slate-400 py-2 col-span-full">No monthly data available yet.</p>`;
+        return;
+      }
+
+      // Group entries by YYYY-MM
+      const monthlyGroups = {};
+      const sorted = [...entries].sort((a, b) => a.id.localeCompare(b.id));
+
+      sorted.forEach(entry => {
+        const monthKey = entry.id.substring(0, 7); // e.g. "2026-03"
+        if (!monthlyGroups[monthKey]) {
+          monthlyGroups[monthKey] = [];
+        }
+        monthlyGroups[monthKey].push(entry);
+      });
+
+      const months = Object.keys(monthlyGroups).sort().reverse(); // recent first
+
+      months.forEach(monthKey => {
+        const group = monthlyGroups[monthKey];
+        const startBalance = group[0].balance;
+        const endBalance = group[group.length - 1].balance;
+        const diff = endBalance - startBalance;
+        const pct = startBalance !== 0 ? ((diff / startBalance) * 100).toFixed(1) : 0;
+
+        // Formatted month title (e.g. March 2026)
+        const dateObj = new Date(`${monthKey}-01T00:00:00`);
+        const monthLabel = dateObj.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+
+        const isPositive = diff >= 0;
+        const pill = document.createElement("div");
+        pill.className = "p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/60 flex items-center justify-between";
+        
+        pill.innerHTML = `
+          <div>
+            <p class="text-xs font-bold text-slate-800 dark:text-slate-200">${monthLabel}</p>
+            <p class="text-[11px] text-slate-400 mt-0.5">${group.length} entry${group.length > 1 ? 's' : ''} &bull; End: ${formatCurrency(endBalance)}</p>
+          </div>
+          <div class="text-right">
+            <span class="inline-block px-2 py-0.5 rounded-md text-xs font-bold ${isPositive ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300' : 'bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-300'}">
+              ${isPositive ? '+' : ''}${formatCurrency(diff)}
+            </span>
+            <p class="text-[10px] ${isPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'} font-medium mt-1">
+              ${isPositive ? '↑' : '↓'} ${pct}%
+            </p>
+          </div>
+        `;
+        container.appendChild(pill);
+      });
+    }
+
+    // CSV Export Logic
+    function exportToCSV() {
+      if (!cachedEntries || cachedEntries.length === 0) {
+        showToast("No data to export", "error");
+        return;
+      }
+
+      const rows = [["Date", "Balance USD", "Note"]];
+      const sorted = [...cachedEntries].sort((a, b) => b.id.localeCompare(a.id));
+
+      sorted.forEach(entry => {
+        const cleanNote = (entry.note || "").replace(/"/g, '""');
+        rows.push([entry.id, entry.balance.toFixed(2), `"${cleanNote}"`]);
+      });
+
+      const csvContent = "data:text/csv;charset=utf-8," + rows.map(e => e.join(",")).join("\n");
+      const encodedUri = encodeURI(csvContent);
+      
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `FinFlow_Balance_History_${new Date().toISOString().slice(0,10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      showToast("CSV file downloaded successfully!", "success");
     }
 
     function renderTable(entries) {
@@ -798,16 +943,16 @@
         tr.className = "hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors";
         
         tr.innerHTML = `
-          <td class="px-4 py-3 font-medium text-slate-900 dark:text-white whitespace-nowrap">${entry.id}</td>
-          <td class="px-4 py-3 font-semibold text-slate-900 dark:text-white whitespace-nowrap">${formatCurrency(entry.balance)}</td>
-          <td class="px-4 py-3 text-slate-500 dark:text-slate-400">
-            ${entry.note ? `<span class="inline-block px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 text-[11px] font-medium">${escapeHtml(entry.note)}</span>` : '<span class="text-slate-300 dark:text-slate-600">—</span>'}
+          <td class="px-4 py-3.5 font-medium text-slate-900 dark:text-white whitespace-nowrap">${entry.id}</td>
+          <td class="px-4 py-3.5 font-semibold text-slate-900 dark:text-white whitespace-nowrap">${formatCurrency(entry.balance)}</td>
+          <td class="px-4 py-3.5 text-slate-500 dark:text-slate-400">
+            ${entry.note ? `<span class="inline-block px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 text-[11px] font-medium max-w-[180px] sm:max-w-xs truncate">${escapeHtml(entry.note)}</span>` : '<span class="text-slate-300 dark:text-slate-600">—</span>'}
           </td>
-          <td class="px-4 py-3 text-right whitespace-nowrap">
-            <button onclick="editEntry('${entry.id}', ${entry.balance}, '${(entry.note || "").replace(/'/g, "\\'")}')" class="p-1.5 text-slate-500 hover:text-brand-600 dark:hover:text-brand-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors mr-1" title="Edit">
+          <td class="px-4 py-3.5 text-right whitespace-nowrap">
+            <button onclick="editEntry('${entry.id}', ${entry.balance}, '${(entry.note || "").replace(/'/g, "\\'")}')" class="p-2 text-slate-500 hover:text-brand-600 dark:hover:text-brand-400 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors mr-1 touch-manipulation" title="Edit">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
             </button>
-            <button onclick="deleteEntry('${entry.id}')" class="p-1.5 text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Delete">
+            <button onclick="deleteEntry('${entry.id}')" class="p-2 text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors touch-manipulation" title="Delete">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
             </button>
           </td>
