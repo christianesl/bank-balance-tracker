@@ -6,65 +6,23 @@
   <title>Bank Balance Tracker</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    body {
-      font-family: system-ui, -apple-system, sans-serif;
-      max-width: 800px;
-      margin: 40px auto;
-      padding: 0 20px;
-      background: #f8f9fa;
-    }
+    body { font-family: system-ui, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; background: #f8f9fa; }
     h1 { margin-bottom: 10px; }
-    input, button, select {
-      padding: 10px 14px;
-      margin: 5px 0;
-      font-size: 15px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-    }
-    button {
-      cursor: pointer;
-      background: #2563eb;
-      color: white;
-      border: none;
-    }
+    input, button, select { padding: 10px 14px; margin: 5px 0; font-size: 15px; border-radius: 6px; border: 1px solid #ccc; }
+    button { cursor: pointer; background: #2563eb; color: white; border: none; }
     button:hover { background: #1d4ed8; }
     button.secondary { background: #6b7280; }
     button.danger { background: #dc2626; }
     button.danger:hover { background: #b91c1c; }
     .hidden { display: none; }
-    .card {
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-      margin-bottom: 24px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 12px;
-    }
-    th, td {
-      border: 1px solid #e5e7eb;
-      padding: 10px 12px;
-      text-align: left;
-    }
+    .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 24px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+    th, td { border: 1px solid #e5e7eb; padding: 10px 12px; text-align: left; }
     th { background: #f3f4f6; font-weight: 600; }
     tr:nth-child(even) { background: #f9fafb; }
-    .actions button {
-      padding: 5px 10px;
-      font-size: 13px;
-      margin-right: 6px;
-    }
-    #chartContainer {
-      position: relative;
-      height: 320px;
-      margin-top: 10px;
-    }
-    #saveMessage, #authMessage {
-      margin-top: 8px;
-      font-size: 14px;
-    }
+    .actions button { padding: 5px 10px; font-size: 13px; margin-right: 6px; }
+    #chartContainer { position: relative; height: 320px; margin-top: 10px; }
+    #saveMessage, #authMessage { margin-top: 8px; font-size: 14px; }
   </style>
 </head>
 <body>
@@ -77,66 +35,46 @@
     <input type="password" id="password" placeholder="Password" style="width:100%; max-width:300px;"><br>
     <button onclick="login()">Login</button>
     <button class="secondary" onclick="signup()">Sign Up</button>
+    <button class="secondary" onclick="loginWithGoogle()" style="background: #db4437;">Sign in with Google</button>
     <p id="authMessage" style="color:#dc2626;"></p>
   </div>
 
   <!-- Main App -->
   <div id="appSection" class="hidden">
     <div class="card">
-      <p>
-        Logged in as: <strong id="userEmail"></strong>
-        <button class="secondary" onclick="logout()" style="float:right;">Logout</button>
-      </p>
+      <p>Logged in as: <strong id="userEmail"></strong><button class="secondary" onclick="logout()" style="float:right;">Logout</button></p>
     </div>
-
-    <!-- Chart -->
     <div class="card">
       <h3>Balance Over Time</h3>
-      <div id="chartContainer">
-        <canvas id="balanceChart"></canvas>
-      </div>
+      <div id="chartContainer"><canvas id="balanceChart"></canvas></div>
     </div>
-
-    <!-- Add / Edit Form -->
     <div class="card">
       <h3 id="formTitle">Add New Balance</h3>
       <input type="date" id="dateInput">
       <input type="number" id="balanceInput" placeholder="Balance" step="0.01">
-      <input type="text" id="noteInput" placeholder="Note (optional)" style="width:200px;">
-      <br>
+      <input type="text" id="noteInput" placeholder="Note (optional)" style="width:200px;"><br>
       <button id="saveBtn" onclick="saveBalance()">Save Balance</button>
       <button id="cancelEditBtn" class="secondary hidden" onclick="cancelEdit()">Cancel Edit</button>
       <p id="saveMessage"></p>
     </div>
-
-    <!-- History Table -->
     <div class="card">
       <h3>History</h3>
       <table>
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Balance</th>
-            <th>Note</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
+        <thead><tr><th>Date</th><th>Balance</th><th>Note</th><th>Actions</th></tr></thead>
         <tbody id="historyBody"></tbody>
       </table>
     </div>
   </div>
 
   <script type="module">
-    // ====================== PASTE YOUR FIREBASE CONFIG HERE ======================
     const firebaseConfig = {
-  apiKey: "AIzaSyAksDtCFT3uW6a7VnEe0ZdlwSKS-8Fb6j4",
-  authDomain: "bank-tracker-8bf36.firebaseapp.com",
-  projectId: "bank-tracker-8bf36",
-  storageBucket: "bank-tracker-8bf36.firebasestorage.app",
-  messagingSenderId: "977029945428",
-  appId: "1:977029945428:web:e14d8fd434b7c1848ff5c1"
-};
-    // =============================================================================
+      apiKey: "AIzaSyAksDtCFT3uW6a7VnEe0ZdlwSKS-8Fb6j4",
+      authDomain: "bank-tracker-8bf36.firebaseapp.com",
+      projectId: "bank-tracker-8bf36",
+      storageBucket: "bank-tracker-8bf36.firebasestorage.app",
+      messagingSenderId: "977029945428",
+      appId: "1:977029945428:web:e14d8fd434b7c1848ff5c1"
+    };
 
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
     import {
@@ -144,7 +82,9 @@
       signInWithEmailAndPassword,
       createUserWithEmailAndPassword,
       signOut,
-      onAuthStateChanged
+      onAuthStateChanged,
+      GoogleAuthProvider,
+      signInWithPopup
     } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
     import {
       getFirestore,
@@ -162,23 +102,22 @@
     const db = getFirestore(app);
 
     let chartInstance = null;
-    let editingDate = null; // currently editing document ID
+    let editingDate = null;
 
-    // Make functions available globally
     window.login = login;
     window.signup = signup;
     window.logout = logout;
+    window.loginWithGoogle = loginWithGoogle;
     window.saveBalance = saveBalance;
     window.cancelEdit = cancelEdit;
     window.editEntry = editEntry;
     window.deleteEntry = deleteEntry;
 
-    // Auth state
     onAuthStateChanged(auth, (user) => {
       if (user) {
         document.getElementById("loginSection").classList.add("hidden");
         document.getElementById("appSection").classList.remove("hidden");
-        document.getElementById("userEmail").textContent = user.email;
+        document.getElementById("userEmail").textContent = user.email || user.displayName;
         loadHistory();
       } else {
         document.getElementById("loginSection").classList.remove("hidden");
@@ -192,9 +131,7 @@
       try {
         await signInWithEmailAndPassword(auth, email, password);
         document.getElementById("authMessage").textContent = "";
-      } catch (error) {
-        document.getElementById("authMessage").textContent = error.message;
-      }
+      } catch (e) { document.getElementById("authMessage").textContent = e.message; }
     }
 
     async function signup() {
@@ -203,19 +140,22 @@
       try {
         await createUserWithEmailAndPassword(auth, email, password);
         document.getElementById("authMessage").textContent = "";
-      } catch (error) {
-        document.getElementById("authMessage").textContent = error.message;
-      }
+      } catch (e) { document.getElementById("authMessage").textContent = e.message; }
     }
 
-    function logout() {
-      signOut(auth);
+    async function loginWithGoogle() {
+      const provider = new GoogleAuthProvider();
+      try {
+        await signInWithPopup(auth, provider);
+        document.getElementById("authMessage").textContent = "";
+      } catch (e) { document.getElementById("authMessage").textContent = e.message; }
     }
+
+    function logout() { signOut(auth); }
 
     async function saveBalance() {
       const user = auth.currentUser;
       if (!user) return;
-
       const date = document.getElementById("dateInput").value;
       const balance = parseFloat(document.getElementById("balanceInput").value);
       const note = document.getElementById("noteInput").value.trim();
@@ -225,7 +165,6 @@
         document.getElementById("saveMessage").style.color = "#dc2626";
         return;
       }
-
       try {
         await setDoc(doc(db, "users", user.uid, "balances", date), {
           balance: balance,
@@ -233,15 +172,12 @@
           createdAt: new Date(),
           updatedAt: new Date()
         });
-
         document.getElementById("saveMessage").textContent = editingDate ? "Updated successfully!" : "Saved successfully!";
         document.getElementById("saveMessage").style.color = "#16a34a";
-
-        // Reset form
         cancelEdit();
         loadHistory();
-      } catch (error) {
-        document.getElementById("saveMessage").textContent = error.message;
+      } catch (e) {
+        document.getElementById("saveMessage").textContent = e.message;
         document.getElementById("saveMessage").style.color = "#dc2626";
       }
     }
@@ -251,14 +187,9 @@
       document.getElementById("dateInput").value = date;
       document.getElementById("balanceInput").value = balance;
       document.getElementById("noteInput").value = note || "";
-
       document.getElementById("formTitle").textContent = "Edit Balance";
       document.getElementById("saveBtn").textContent = "Update Balance";
       document.getElementById("cancelEditBtn").classList.remove("hidden");
-      document.getElementById("saveMessage").textContent = "";
-
-      // Scroll to form
-      document.getElementById("formTitle").scrollIntoView({ behavior: "smooth" });
     }
 
     function cancelEdit() {
@@ -269,60 +200,38 @@
       document.getElementById("formTitle").textContent = "Add New Balance";
       document.getElementById("saveBtn").textContent = "Save Balance";
       document.getElementById("cancelEditBtn").classList.add("hidden");
-      document.getElementById("saveMessage").textContent = "";
     }
 
     async function deleteEntry(date) {
-      if (!confirm(`Are you sure you want to delete the entry for ${date}?`)) return;
-
+      if (!confirm(`Delete entry for ${date}?`)) return;
       const user = auth.currentUser;
       try {
         await deleteDoc(doc(db, "users", user.uid, "balances", date));
         loadHistory();
-      } catch (error) {
-        alert("Error deleting: " + error.message);
-      }
+      } catch (e) { alert("Error deleting: " + e.message); }
     }
 
     async function loadHistory() {
       const user = auth.currentUser;
       if (!user) return;
-
-      const q = query(
-        collection(db, "users", user.uid, "balances"),
-        orderBy("createdAt", "desc")
-      );
+      const q = query(collection(db, "users", user.uid, "balances"), orderBy("createdAt", "desc"));
       const snapshot = await getDocs(q);
-
       const tbody = document.getElementById("historyBody");
       tbody.innerHTML = "";
-
       const chartLabels = [];
       const chartData = [];
-
-      // We need chronological order for the chart (oldest → newest)
       const entries = [];
-      snapshot.forEach((docSnap) => {
-        entries.push({
-          id: docSnap.id,
-          ...docSnap.data()
-        });
-      });
-
-      // Sort ascending by date for chart
+      snapshot.forEach(docSnap => entries.push({ id: docSnap.id, ...docSnap.data() }));
       const sortedForChart = [...entries].sort((a, b) => a.id.localeCompare(b.id));
-
       sortedForChart.forEach(entry => {
         chartLabels.push(entry.id);
         chartData.push(entry.balance);
       });
-
-      // Fill table (newest first)
       entries.forEach((entry) => {
         const row = document.createElement("tr");
         row.innerHTML = `
           <td>${entry.id}</td>
-          <td>${entry.balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+          <td>${entry.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
           <td>${entry.note || "—"}</td>
           <td class="actions">
             <button onclick="editEntry('${entry.id}', ${entry.balance}, '${(entry.note || "").replace(/'/g, "\\'")}')">Edit</button>
@@ -331,65 +240,31 @@
         `;
         tbody.appendChild(row);
       });
-
-      // Update Chart
       updateChart(chartLabels, chartData);
     }
 
     function updateChart(labels, data) {
       const ctx = document.getElementById("balanceChart").getContext("2d");
-
-      if (chartInstance) {
-        chartInstance.destroy();
-      }
-
+      if (chartInstance) chartInstance.destroy();
       chartInstance = new Chart(ctx, {
         type: "line",
         data: {
           labels: labels,
           datasets: [{
-            label: "Balance",
             data: data,
             borderColor: "#2563eb",
             backgroundColor: "rgba(37, 99, 235, 0.1)",
-            borderWidth: 2,
             fill: true,
-            tension: 0.3,
-            pointRadius: 4,
-            pointHoverRadius: 6
+            tension: 0.3
           }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              callbacks: {
-                label: function(context) {
-                  return "Balance: " + context.parsed.y.toLocaleString(undefined, {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                  });
-                }
-              }
-            }
-          },
-          scales: {
-            y: {
-              beginAtZero: false,
-              ticks: {
-                callback: function(value) {
-                  return value.toLocaleString();
-                }
-              }
-            }
-          }
+          plugins: { legend: { display: false } }
         }
       });
     }
-
-    // Set today's date by default
     document.getElementById("dateInput").valueAsDate = new Date();
   </script>
 </body>
