@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FinFlow - Modern Bank Balance Tracker</title>
-  
+
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -43,13 +43,13 @@
     body {
       font-family: 'Inter', sans-serif;
     }
-    
+
     .glass-card {
       background: rgba(255, 255, 255, 0.85);
       backdrop-filter: blur(12px);
       border: 1px solid rgba(229, 231, 235, 0.8);
     }
-    
+
     .dark .glass-card {
       background: rgba(17, 24, 39, 0.85);
       backdrop-filter: blur(12px);
@@ -126,7 +126,7 @@
     <!-- LOGIN & AUTHENTICATION SECTION -->
     <div id="loginSection" class="max-w-md mx-auto my-12 transition-all">
       <div class="glass-card rounded-2xl p-8 shadow-xl border border-slate-200/80 dark:border-slate-800 relative overflow-hidden">
-        
+
         <!-- Decorative Header Gradient -->
         <div class="absolute -top-12 -left-12 w-32 h-32 bg-brand-500/20 rounded-full blur-2xl pointer-events-none"></div>
         <div class="absolute -bottom-12 -right-12 w-32 h-32 bg-indigo-500/20 rounded-full blur-2xl pointer-events-none"></div>
@@ -272,7 +272,7 @@
             <h3 class="text-lg font-bold text-slate-900 dark:text-white">Balance Trajectory</h3>
             <p class="text-xs text-slate-500 dark:text-slate-400">Visual trend of your total bank balance over time</p>
           </div>
-          
+
           <div class="flex items-center gap-2">
             <button onclick="resetChartZoom()" class="px-3.5 py-2 text-xs font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition-all touch-manipulation">
               Refresh Chart
@@ -324,7 +324,7 @@
               <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Balance Amount ($)</label>
               <div class="relative">
                 <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 font-semibold">$</span>
-                <input type="number" id="balanceInput" placeholder="0.00" step="0.01" class="w-full pl-8 pr-3.5 py-2.5 text-sm bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-slate-900 dark:text-white outline-none">
+                <input type="text" id="balanceInput" inputmode="decimal" placeholder="0.00" autocomplete="off" oninput="formatBalanceInput(this)" class="w-full pl-8 pr-3.5 py-2.5 text-sm bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-slate-900 dark:text-white outline-none">
               </div>
             </div>
 
@@ -337,12 +337,12 @@
               <button id="saveBtn" type="button" onclick="saveBalance()" class="w-full min-h-[44px] py-2.5 px-4 bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold rounded-xl shadow-md shadow-brand-500/20 active:scale-[0.99] transition-all flex items-center justify-center gap-2 touch-manipulation">
                 Save Balance Entry
               </button>
-              
+
               <button id="cancelEditBtn" type="button" onclick="cancelEdit()" class="hidden w-full min-h-[44px] py-2 px-4 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-medium rounded-xl transition-all touch-manipulation">
                 Cancel Editing
               </button>
             </div>
-            
+
             <p id="saveMessage" class="text-xs text-center font-medium min-h-[16px]"></p>
           </form>
         </div>
@@ -412,7 +412,7 @@
       </div>
       <h3 class="text-lg font-bold text-slate-900 dark:text-white">Delete Entry?</h3>
       <p id="deleteModalText" class="text-xs text-slate-500 dark:text-slate-400 mt-1 mb-6">Are you sure you want to delete this balance entry? This action cannot be undone.</p>
-      
+
       <div class="flex gap-3">
         <button onclick="closeDeleteModal()" class="w-1/2 py-2 px-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold rounded-xl transition-all">
           Cancel
@@ -548,7 +548,7 @@
     function showToast(message, type = 'info') {
       const container = document.getElementById('toastContainer');
       const toast = document.createElement('div');
-      
+
       const bgColors = {
         success: 'bg-emerald-600 text-white',
         error: 'bg-red-600 text-white',
@@ -557,7 +557,7 @@
 
       toast.className = `${bgColors[type] || bgColors.info} px-4 py-3 rounded-xl shadow-lg text-xs font-medium flex items-center justify-between pointer-events-auto transition-all duration-300 transform translate-y-2 opacity-0`;
       toast.innerHTML = `<span>${message}</span>`;
-      
+
       container.appendChild(toast);
 
       setTimeout(() => {
@@ -670,9 +670,28 @@
       showToast("Interactive demo mode activated", "info");
     }
 
+    function formatBalanceInput(input) {
+      const rawValue = input.value.replace(/,/g, "").replace(/[^\d.-]/g, "");
+      const isNegative = rawValue.startsWith("-");
+      const unsignedValue = rawValue.replace(/-/g, "");
+      const decimalIndex = unsignedValue.indexOf(".");
+      const integerPart = decimalIndex >= 0 ? unsignedValue.slice(0, decimalIndex) : unsignedValue;
+      const decimalPart = decimalIndex >= 0 ? unsignedValue.slice(decimalIndex + 1).slice(0, 2) : "";
+
+      if (!integerPart && !decimalPart) {
+        input.value = isNegative ? "-" : "";
+        return;
+      }
+
+      const formattedInteger = (integerPart || "0")
+        .replace(/^0+(?=\d)/, "")
+        .replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      input.value = `${isNegative ? "-" : ""}${formattedInteger}${decimalIndex >= 0 ? `.${decimalPart}` : ""}`;
+    }
+
     async function saveBalance() {
       const date = document.getElementById("dateInput").value;
-      const balance = parseFloat(document.getElementById("balanceInput").value);
+      const balance = parseFloat(document.getElementById("balanceInput").value.replace(/,/g, ""));
       const note = document.getElementById("noteInput").value.trim();
 
       if (!date || isNaN(balance)) {
@@ -717,7 +736,7 @@
     function editEntry(date, balance, note) {
       editingDate = date;
       document.getElementById("dateInput").value = date;
-      document.getElementById("balanceInput").value = balance;
+      document.getElementById("balanceInput").value = balance.toLocaleString("en-US", { maximumFractionDigits: 2 });
       document.getElementById("noteInput").value = note || "";
       document.getElementById("formTitle").innerHTML = `
         <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
@@ -746,7 +765,7 @@
       pendingDeleteDate = date;
       document.getElementById("deleteModalText").textContent = `Are you sure you want to delete the balance snapshot for ${date}?`;
       document.getElementById("deleteModal").classList.remove("hidden");
-      
+
       document.getElementById("confirmDeleteBtn").onclick = async () => {
         if (isDemoMode) {
           cachedEntries = cachedEntries.filter(e => e.id !== pendingDeleteDate);
@@ -784,7 +803,7 @@
         const snapshot = await getDocs(q);
         cachedEntries = [];
         snapshot.forEach(docSnap => cachedEntries.push({ id: docSnap.id, ...docSnap.data() }));
-        
+
         renderDashboard(cachedEntries);
       } catch (e) {
         console.error("Error loading history:", e);
@@ -825,7 +844,7 @@
       const overallPct = earliestEntry.balance !== 0 ? ((overallDiff / earliestEntry.balance) * 100).toFixed(1) : 0;
       const growthElem = document.getElementById("metricTotalGrowth");
       const growthPctElem = document.getElementById("metricTotalGrowthPct");
-      
+
       growthElem.textContent = `${overallDiff >= 0 ? '+' : ''}${formatCurrency(overallDiff)}`;
       if (overallDiff >= 0) {
         growthElem.className = "text-xl sm:text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-2";
@@ -906,7 +925,7 @@
         const isPositive = diff >= 0;
         const pill = document.createElement("div");
         pill.className = "p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/60 flex items-center justify-between";
-        
+
         pill.innerHTML = `
           <div>
             <p class="text-xs font-bold text-slate-800 dark:text-slate-200">${monthLabel}</p>
@@ -941,7 +960,7 @@
 
       const csvContent = "data:text/csv;charset=utf-8," + rows.map(e => e.join(",")).join("\n");
       const encodedUri = encodeURI(csvContent);
-      
+
       const link = document.createElement("a");
       link.setAttribute("href", encodedUri);
       link.setAttribute("download", `FinFlow_Balance_History_${new Date().toISOString().slice(0,10)}.csv`);
@@ -967,7 +986,7 @@
       entries.forEach((entry) => {
         const tr = document.createElement("tr");
         tr.className = "hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors";
-        
+
         tr.innerHTML = `
           <td class="px-4 py-3.5 font-medium text-slate-900 dark:text-white whitespace-nowrap">${entry.id}</td>
           <td class="px-4 py-3.5 font-semibold text-slate-900 dark:text-white whitespace-nowrap">${formatCurrency(entry.balance)}</td>
@@ -989,8 +1008,8 @@
 
     function filterHistoryTable() {
       const query = document.getElementById("searchInput").value.toLowerCase();
-      const filtered = cachedEntries.filter(entry => 
-        entry.id.toLowerCase().includes(query) || 
+      const filtered = cachedEntries.filter(entry =>
+        entry.id.toLowerCase().includes(query) ||
         (entry.note && entry.note.toLowerCase().includes(query))
       );
       renderTable(filtered);
@@ -1000,7 +1019,7 @@
       const canvas = document.getElementById("balanceChart");
       if (!canvas) return;
       const ctx = canvas.getContext("2d");
-      
+
       const sortedForChart = [...entries].sort((a, b) => a.id.localeCompare(b.id));
       const labels = sortedForChart.map(e => e.id);
       const data = sortedForChart.map(e => e.balance);
