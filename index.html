@@ -913,7 +913,7 @@
 
       const months = Object.keys(monthlyGroups).sort().reverse();
 
-      months.forEach(monthKey => {
+      months.slice(0, 3).forEach(monthKey => {
         const group = monthlyGroups[monthKey];
         const startBalance = group[0].balance;
         const endBalance = group[group.length - 1].balance;
