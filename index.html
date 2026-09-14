@@ -688,6 +688,7 @@
         .replace(/\B(?=(\d{3})+(?!\d))/g, ",");
       input.value = `${isNegative ? "-" : ""}${formattedInteger}${decimalIndex >= 0 ? `.${decimalPart}` : ""}`;
     }
+    window.formatBalanceInput = formatBalanceInput;
 
     async function saveBalance() {
       const date = document.getElementById("dateInput").value;
