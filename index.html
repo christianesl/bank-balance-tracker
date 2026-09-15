@@ -200,6 +200,24 @@
     <!-- MAIN DASHBOARD APP SECTION -->
     <div id="appSection" class="hidden space-y-6">
 
+      <!-- Account Selector -->
+      <div class="glass-card rounded-2xl p-4 sm:p-5 shadow-sm">
+        <div class="flex flex-col lg:flex-row lg:items-end gap-4">
+          <div class="flex-1">
+            <label for="accountSelect" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Active Account</label>
+            <select id="accountSelect" onchange="selectAccount(this.value)" class="w-full px-3.5 py-2.5 text-sm bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-slate-900 dark:text-white outline-none"></select>
+          </div>
+          <div class="flex-1">
+            <label for="newAccountName" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Create Account</label>
+            <div class="flex gap-2">
+              <input type="text" id="newAccountName" maxlength="60" placeholder="e.g. patrimotial1234" class="min-w-0 flex-1 px-3.5 py-2.5 text-sm bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-slate-900 dark:text-white outline-none">
+              <button type="button" onclick="createAccount()" class="px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold rounded-xl shadow-md shadow-brand-500/20 transition-all whitespace-nowrap">Add Account</button>
+            </div>
+          </div>
+        </div>
+        <p id="accountMessage" class="text-xs text-slate-500 dark:text-slate-400 mt-2 min-h-[16px]"></p>
+      </div>
+
       <!-- Top Summary Metrics Cards Bar -->
       <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5 sm:gap-4">
         <!-- Current Balance -->
@@ -462,7 +480,8 @@
       getDocs,
       deleteDoc,
       query,
-      orderBy
+      orderBy,
+      writeBatch
     } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
 
     // Initialize Firebase
@@ -492,6 +511,8 @@
     let cachedEntries = [];
     let isDemoMode = false;
     let pendingDeleteDate = null;
+    let accounts = [];
+    let selectedAccountId = null;
 
     window.login = login;
     window.signup = signup;
@@ -507,6 +528,8 @@
     window.closeDeleteModal = closeDeleteModal;
     window.resetChartZoom = resetChartZoom;
     window.exportToCSV = exportToCSV;
+    window.selectAccount = selectAccount;
+    window.createAccount = createAccount;
 
     // Theme Management
     if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
@@ -535,7 +558,7 @@
           document.getElementById("userHeaderProfile").classList.remove("hidden");
           document.getElementById("demoBadge").classList.add("hidden");
           document.getElementById("userEmail").textContent = user.email || user.displayName || "User";
-          loadHistory();
+          loadAccounts();
         } else if (!isDemoMode) {
           document.getElementById("loginSection").classList.remove("hidden");
           document.getElementById("appSection").classList.add("hidden");
@@ -651,6 +674,8 @@
     // Demo Mode Loader
     function enableDemoMode() {
       isDemoMode = true;
+      accounts = [{ id: "demo", name: "Demo Account" }];
+      selectedAccountId = "demo";
       document.getElementById("loginSection").classList.add("hidden");
       document.getElementById("appSection").classList.remove("hidden");
       document.getElementById("userHeaderProfile").classList.remove("hidden");
@@ -667,7 +692,112 @@
       ];
 
       renderDashboard(cachedEntries);
+      renderAccountSelector();
       showToast("Interactive demo mode activated", "info");
+    }
+
+    function accountCollection(user, accountId) {
+      return collection(db, "users", user.uid, "accounts", accountId, "balances");
+    }
+
+    function accountDocument(user, accountId) {
+      return doc(db, "users", user.uid, "accounts", accountId);
+    }
+
+    async function loadAccounts() {
+      const user = auth.currentUser;
+      if (!user) return;
+
+      try {
+        const snapshot = await getDocs(collection(db, "users", user.uid, "accounts"));
+        accounts = snapshot.docs.map(accountDoc => ({ id: accountDoc.id, ...accountDoc.data() }))
+          .filter(account => account.name);
+
+        if (accounts.length === 0) {
+          await migrateLegacyBalances(user);
+        }
+
+        selectedAccountId = selectedAccountId && accounts.some(account => account.id === selectedAccountId)
+          ? selectedAccountId
+          : accounts[0].id;
+        renderAccountSelector();
+        await loadHistory();
+      } catch (e) {
+        console.error("Error loading accounts:", e);
+        showToast("Error loading accounts: " + e.message, "error");
+      }
+    }
+
+    async function migrateLegacyBalances(user) {
+      const legacySnapshot = await getDocs(query(collection(db, "users", user.uid, "balances"), orderBy("createdAt", "desc")));
+      const accountId = "main";
+      const accountRef = accountDocument(user, accountId);
+
+      await setDoc(accountRef, {
+        name: "Main Account",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        migratedFromLegacy: true
+      });
+
+      const legacyEntries = legacySnapshot.docs;
+      for (let start = 0; start < legacyEntries.length; start += 450) {
+        const batch = writeBatch(db);
+        legacyEntries.slice(start, start + 450).forEach(balanceDoc => {
+          batch.set(doc(accountCollection(user, accountId), balanceDoc.id), balanceDoc.data());
+        });
+        await batch.commit();
+      }
+
+      accounts = [{ id: accountId, name: "Main Account", migratedFromLegacy: true }];
+      showToast(legacySnapshot.empty ? "Created your first account" : "Balances migrated to Main Account", "success");
+    }
+
+    function renderAccountSelector() {
+      const select = document.getElementById("accountSelect");
+      if (!select) return;
+      select.innerHTML = accounts.map(account => `<option value="${escapeHtml(account.id)}">${escapeHtml(account.name)}</option>`).join("");
+      select.value = selectedAccountId || "";
+    }
+
+    async function selectAccount(accountId) {
+      if (!accounts.some(account => account.id === accountId)) return;
+      selectedAccountId = accountId;
+      cancelEdit();
+      await loadHistory();
+    }
+
+    async function createAccount() {
+      const user = auth.currentUser;
+      const input = document.getElementById("newAccountName");
+      const name = input.value.trim();
+      const message = document.getElementById("accountMessage");
+
+      if (!user || !name) {
+        message.textContent = "Enter an account name first.";
+        message.className = "text-xs text-red-500 mt-2 min-h-[16px]";
+        return;
+      }
+      if (accounts.some(account => account.name.toLowerCase() === name.toLowerCase())) {
+        message.textContent = "That account name already exists.";
+        message.className = "text-xs text-red-500 mt-2 min-h-[16px]";
+        return;
+      }
+
+      try {
+        const accountId = crypto.randomUUID();
+        await setDoc(accountDocument(user, accountId), { name, createdAt: new Date(), updatedAt: new Date() });
+        accounts.push({ id: accountId, name });
+        selectedAccountId = accountId;
+        input.value = "";
+        message.textContent = "";
+        renderAccountSelector();
+        await loadHistory();
+        showToast(`Account "${name}" created`, "success");
+      } catch (e) {
+        message.textContent = e.message;
+        message.className = "text-xs text-red-500 mt-2 min-h-[16px]";
+      }
     }
 
     function formatBalanceInput(input) {
@@ -716,10 +846,10 @@
       }
 
       const user = auth.currentUser;
-      if (!user) return;
+      if (!user || !selectedAccountId) return;
 
       try {
-        await setDoc(doc(db, "users", user.uid, "balances", date), {
+        await setDoc(doc(accountCollection(user, selectedAccountId), date), {
           balance: balance,
           note: note,
           createdAt: new Date(),
@@ -777,9 +907,9 @@
         }
 
         const user = auth.currentUser;
-        if (!user) return;
+        if (!user || !selectedAccountId) return;
         try {
-          await deleteDoc(doc(db, "users", user.uid, "balances", pendingDeleteDate));
+          await deleteDoc(doc(accountCollection(user, selectedAccountId), pendingDeleteDate));
           showToast("Entry deleted", "info");
           closeDeleteModal();
           loadHistory();
@@ -797,10 +927,10 @@
 
     async function loadHistory() {
       const user = auth.currentUser;
-      if (!user) return;
+      if (!user || !selectedAccountId) return;
 
       try {
-        const q = query(collection(db, "users", user.uid, "balances"), orderBy("createdAt", "desc"));
+        const q = query(accountCollection(user, selectedAccountId), orderBy("createdAt", "desc"));
         const snapshot = await getDocs(q);
         cachedEntries = [];
         snapshot.forEach(docSnap => cachedEntries.push({ id: docSnap.id, ...docSnap.data() }));

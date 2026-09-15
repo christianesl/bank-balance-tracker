@@ -8,6 +8,8 @@ A browser-based personal bank account balance tracker branded as FinFlow. It use
 - Sign in with Google OAuth.
 - Try an interactive demo without logging in; demo changes are kept in memory only.
 - Save one balance entry per date, with an optional note.
+- Create multiple independently tracked accounts with custom names.
+- Automatically migrate existing single-account balances into a `Main Account` on first sign-in after the multi-account update.
 - Edit or delete existing entries.
 - View dashboard metrics for the latest, highest, and lowest balances, percentage change, and record count.
 - View entries in a searchable history table with a confirmation dialog for deletion.
@@ -29,19 +31,14 @@ A browser-based personal bank account balance tracker branded as FinFlow. It use
 3. Enable the Email/Password and Google providers under Firebase Authentication.
 4. Add the local development URL, such as `http://localhost:8000`, to Firebase Authentication's authorized domains if required.
 5. Create a Firestore database.
-6. Add Firestore security rules that only allow an authenticated user to access their own balances. For example:
+6. Add the rules from [`firestore.rules`](firestore.rules), or paste them into the Firestore Rules tab. The rules temporarily support both the legacy balance path and the new account paths so existing users can migrate safely.
 
-	 ```text
-	 rules_version = '2';
-	 service cloud.firestore {
-		 match /databases/{database}/documents {
-			 match /users/{userId}/balances/{balanceId} {
-				 allow read, write: if request.auth != null
-													 && request.auth.uid == userId;
-			 }
-		 }
-	 }
+	 Deploy with the Firebase CLI if it is configured for this project:
+
+	 ```bash
+	 firebase deploy --only firestore:rules
 	 ```
+	Then open <http://localhost:8000> in a browser.
 
 The current page is configured for the `bank-tracker-8bf36` Firebase project. Do not use permissive Firestore rules in production. Firebase web configuration values identify the project, but authorization is enforced by Authentication and Firestore rules.
 
@@ -63,6 +60,14 @@ Balances are stored at:
 users/{uid}/balances/{YYYY-MM-DD}
 ```
 
+For users who have migrated, balances are stored at:
+
+```text
+users/{uid}/accounts/{accountId}/balances/{YYYY-MM-DD}
+```
+
+Account documents are stored at `users/{uid}/accounts/{accountId}` and contain a user-facing `name`. Account names are unique per user and can be custom values such as `patrimotial1234`. Transfers between accounts are not supported; each account has an independent history.
+
 Each document contains:
 
 ```text
@@ -74,7 +79,7 @@ updatedAt: timestamp
 
 The date is used as the document ID, so saving another balance for the same date updates that day's entry.
 
-The demo mode uses sample entries in browser memory and does not read from or write to Firestore.
+The demo mode uses sample entries in browser memory and does not read from or write to Firestore. On the first authenticated load, the app creates a `Main Account`, copies legacy balances into it in batches, and leaves the original collection in place as a temporary backup.
 
 ## Implementation notes
 
