@@ -9,7 +9,9 @@ A browser-based personal bank account balance tracker branded as FinFlow. It use
 - Try an interactive demo without logging in; demo changes are kept in memory only.
 - Save one balance entry per date, with an optional note.
 - Create multiple independently tracked accounts with custom names.
+- Delete unused accounts and their balance history.
 - Automatically migrate existing single-account balances into a `Main Account` on first sign-in after the multi-account update.
+- Import and export account history as CSV files.
 - Edit or delete existing entries.
 - View dashboard metrics for the latest, highest, and lowest balances, percentage change, and record count.
 - View entries in a searchable history table with a confirmation dialog for deletion.
@@ -86,5 +88,6 @@ The demo mode uses sample entries in browser memory and does not read from or wr
 - Tailwind CSS, Inter, and Chart.js are loaded from CDNs; Firebase SDK modules are loaded from Google CDN version `10.14.0`.
 - The history query orders records by `createdAt` descending; metrics and the chart sort entries by their date document ID.
 - The chart uses USD formatting and the form accepts decimal balance values.
+- CSV imports use the exported `Date, Balance USD, Note` format; matching dates are updated in the selected account.
 - Notes are HTML-escaped before being displayed, but edit/delete controls still use inline event handlers. A future hardening pass could attach listeners programmatically and avoid interpolating values into handler attributes.
 - Firebase error messages are displayed directly in the authentication and data error UI. For production use, consider mapping technical errors to user-friendly messages and validating balance ranges explicitly.
