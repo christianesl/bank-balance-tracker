@@ -206,7 +206,10 @@
           <div class="flex-1">
             <label for="accountSelect" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Active Account</label>
             <select id="accountSelect" onchange="selectAccount(this.value)" class="w-full px-3.5 py-2.5 text-sm bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-slate-900 dark:text-white outline-none"></select>
-            <button type="button" onclick="deleteAccount()" class="mt-2 text-xs font-medium text-rose-600 dark:text-rose-400 hover:underline">Delete active account</button>
+            <div class="flex gap-3 mt-2">
+              <button type="button" onclick="editAccount()" class="text-xs font-medium text-brand-600 dark:text-brand-400 hover:underline">Edit account name</button>
+              <button type="button" onclick="deleteAccount()" class="text-xs font-medium text-rose-600 dark:text-rose-400 hover:underline">Delete active account</button>
+            </div>
           </div>
           <div class="flex-1">
             <label for="newAccountName" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Create Account</label>
@@ -448,6 +451,25 @@
     </div>
   </div>
 
+  <!-- Account Edit Modal Dialog -->
+  <div id="accountEditModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm transition-opacity">
+    <div class="glass-card max-w-sm w-full rounded-2xl p-6 shadow-2xl border border-slate-200 dark:border-slate-800">
+      <h3 class="text-lg font-bold text-slate-900 dark:text-white">Edit Account Name</h3>
+      <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 mb-4">Rename this account without changing its balance history.</p>
+      <input id="accountNameInput" type="text" maxlength="60" class="w-full px-3.5 py-2.5 text-sm bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-slate-900 dark:text-white outline-none" onkeydown="if (event.key === 'Enter') confirmAccountEdit()">
+      <p id="accountEditMessage" class="text-xs text-rose-500 mt-2 min-h-[16px]"></p>
+
+      <div class="flex gap-3 mt-4">
+        <button type="button" onclick="closeAccountEditModal()" class="w-1/2 py-2 px-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold rounded-xl transition-all">
+          Cancel
+        </button>
+        <button type="button" onclick="confirmAccountEdit()" class="w-1/2 py-2 px-4 bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold rounded-xl shadow-md shadow-brand-500/20 transition-all">
+          Save Name
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Account Delete Modal Dialog -->
   <div id="accountDeleteModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm transition-opacity">
     <div class="glass-card max-w-sm w-full rounded-2xl p-6 shadow-2xl border border-slate-200 dark:border-slate-800 text-center">
@@ -538,6 +560,7 @@
     let isDemoMode = false;
     let pendingDeleteDate = null;
     let pendingDeleteAccountId = null;
+    let pendingEditAccountId = null;
     let accounts = [];
     let selectedAccountId = null;
 
@@ -555,6 +578,9 @@
     window.closeDeleteModal = closeDeleteModal;
     window.deleteAccount = deleteAccount;
     window.closeAccountDeleteModal = closeAccountDeleteModal;
+    window.editAccount = editAccount;
+    window.closeAccountEditModal = closeAccountEditModal;
+    window.confirmAccountEdit = confirmAccountEdit;
     window.resetChartZoom = resetChartZoom;
     window.exportToCSV = exportToCSV;
     window.importCSV = importCSV;
@@ -828,6 +854,52 @@
         message.textContent = e.message;
         message.className = "text-xs text-red-500 mt-2 min-h-[16px]";
       }
+    }
+
+    function editAccount() {
+      const account = accounts.find(item => item.id === selectedAccountId);
+      if (!account) return;
+
+      pendingEditAccountId = account.id;
+      document.getElementById("accountNameInput").value = account.name;
+      document.getElementById("accountEditMessage").textContent = "";
+      document.getElementById("accountEditModal").classList.remove("hidden");
+      document.getElementById("accountNameInput").focus();
+    }
+
+    async function confirmAccountEdit() {
+      const account = accounts.find(item => item.id === pendingEditAccountId);
+      const user = auth.currentUser;
+      const name = document.getElementById("accountNameInput").value.trim();
+      const message = document.getElementById("accountEditMessage");
+      if (!account) return;
+
+      if (!name) {
+        message.textContent = "Enter an account name.";
+        return;
+      }
+      if (accounts.some(item => item.id !== account.id && item.name.toLowerCase() === name.toLowerCase())) {
+        message.textContent = "That account name already exists.";
+        return;
+      }
+
+      try {
+        if (!isDemoMode) {
+          if (!user) throw new Error("You must be signed in to edit an account.");
+          await setDoc(accountDocument(user, account.id), { name, updatedAt: new Date() }, { merge: true });
+        }
+        account.name = name;
+        renderAccountSelector();
+        closeAccountEditModal();
+        showToast("Account name updated", "success");
+      } catch (e) {
+        message.textContent = e.message;
+      }
+    }
+
+    function closeAccountEditModal() {
+      document.getElementById("accountEditModal").classList.add("hidden");
+      pendingEditAccountId = null;
     }
 
     function deleteAccount() {

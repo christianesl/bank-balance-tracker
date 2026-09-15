@@ -9,6 +9,7 @@ A browser-based personal bank account balance tracker branded as FinFlow. It use
 - Try an interactive demo without logging in; demo changes are kept in memory only.
 - Save one balance entry per date, with an optional note.
 - Create multiple independently tracked accounts with custom names.
+- Rename active accounts without changing their balance history.
 - Delete unused accounts and their balance history.
 - Automatically migrate existing single-account balances into a `Main Account` on first sign-in after the multi-account update.
 - Import and export account history as CSV files.
